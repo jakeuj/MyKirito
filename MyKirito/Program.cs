@@ -64,7 +64,8 @@ namespace MyKirito
         // 程式進入點
         private static async Task<int> Main(string[] args)
         {
-            // Console.OutputEncoding = Encoding.UTF8;
+            if (args.Length > 0)
+                _token = args[0];
             // 初始化
             Init();
             using var host = Host.CreateDefaultBuilder(args)
@@ -115,14 +116,13 @@ namespace MyKirito
             while (true)
             {
                 newInput = Console.ReadLine();
-                if (!string.IsNullOrWhiteSpace(newInput))
+                if (!string.IsNullOrWhiteSpace(newInput)) _token = newInput;
+                if (!string.IsNullOrWhiteSpace(_token))
                 {
-                    _token = newInput;
-                    Console.WriteLine($"Token is set to: {newInput}");
+                    Console.WriteLine($"Token is set to: {_token}");
                     break;
                 }
-
-                Console.WriteLine("[Required] Input your token, know?");
+                Console.WriteLine("[Required] Input your token:");
             }
 
             // 更新預設動作
@@ -161,7 +161,6 @@ namespace MyKirito
         // 角色資料傳輸物件
         public class MyKiritoDto
         {
-            //TODO: 顯示中文
             public string NickName { get; set; }
             public int Lv { get; set; }
             public int Exp { get; set; }
