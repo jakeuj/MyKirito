@@ -48,23 +48,34 @@ namespace MyKirito
             Agil,
             Rabbit,
             Kuradeel,
-            Bradley,
+            Bradley
+        }
+
+        // 戰鬥列舉值
+        public enum FightEnum
+        {
+            None = -1,
+            Friend,
+            Hard,
+            Duo,
+            Kill
         }
 
         // 行動版本號
         private const int DoActionVersion = 2;
-        
+
         // 遊戲Pvp檢查時間闕值 (預設:400秒)
         private const int PvpTime = 400;
-        
+
         // 遊戲檢查時間闕值 (預設:100秒)
         private const int CheckTime = 100000;
-        
+
         // 亂數產生器
         private static readonly Random RandomCd = new Random();
-        
+
         // 亂數最大值 (預設:10秒)
         private static int _randTime = 10000;
+
         // 預設角色
         private static CharEnum _defaultChar = CharEnum.Kirito;
 
@@ -73,7 +84,7 @@ namespace MyKirito
 
         //總獲得屬性點
         private static int _totalPoints;
-        
+
         //自動投胎等級 (0為不自動投胎，預設:0級)
         private static int _defaultReIncarnationLevel;
 
@@ -82,6 +93,10 @@ namespace MyKirito
 
         // 預設動作
         private static ActionEnum _defaultAct = ActionEnum.Girl;
+
+        // 預設Pvp
+        private static FightEnum _defaultFight = FightEnum.None;
+
 
         // 額外屬性等級闕值
         private static readonly int[] AddPointLevel = {15, 20, 23, 25};
@@ -93,15 +108,18 @@ namespace MyKirito
             if (args.Length > 0)
                 _token = args[0];
             // 接收重生等級參數
-            if (args.Length > 1 && int.TryParse(args[1],out var newReLevel))
+            if (args.Length > 1 && int.TryParse(args[1], out var newReLevel))
                 _defaultReIncarnationLevel = newReLevel;
             // 接收行為參數
-            if (args.Length > 2 && Enum.TryParse(args[2],true,out ActionEnum newActEnum))
+            if (args.Length > 2 && Enum.TryParse(args[2], true, out ActionEnum newActEnum))
                 _defaultAct = newActEnum;
             // 接收角色參數
-            if (args.Length > 3 && Enum.TryParse(args[3],true,out CharEnum newCharEnum))
+            if (args.Length > 3 && Enum.TryParse(args[3], true, out CharEnum newCharEnum))
                 _defaultChar = newCharEnum;
-            
+            // 接收戰鬥參數
+            if (args.Length > 4 && Enum.TryParse(args[4], true, out FightEnum newFightEnum))
+                _defaultFight = newFightEnum;
+
             // 初始化
             Init();
             using var host = Host.CreateDefaultBuilder(args)
@@ -161,11 +179,11 @@ namespace MyKirito
 
                 Console.WriteLine("[Required] Input your token:");
             }
-            
+
             // 更新預設角色
             Console.WriteLine($"[Optional] 設定自動重生等級(預設{_defaultReIncarnationLevel}級,0=不自殺):");
             newInput = Console.ReadLine();
-            if (!string.IsNullOrWhiteSpace(newInput) && int.TryParse(newInput,out var newLevel)) 
+            if (!string.IsNullOrWhiteSpace(newInput) && int.TryParse(newInput, out var newLevel))
                 _defaultReIncarnationLevel = newLevel;
             Console.WriteLine($"ReIncarnation level is set to: {_defaultReIncarnationLevel}");
 
@@ -174,23 +192,32 @@ namespace MyKirito
             foreach (var name in Enum.GetNames(typeof(ActionEnum))) Console.Write($" {name} ");
             Console.WriteLine();
             newInput = Console.ReadLine();
-            if (!string.IsNullOrWhiteSpace(newInput) && Enum.TryParse(newInput,true,out ActionEnum newActEnum))
+            if (!string.IsNullOrWhiteSpace(newInput) && Enum.TryParse(newInput, true, out ActionEnum newActEnum))
                 _defaultAct = newActEnum;
             Console.WriteLine($"Action is set to: {_defaultAct.ToString()}");
 
             // 更新預設角色
-            Console.Write("[Optional] 這定重生角色:");
+            Console.Write("[Optional] 設定重生角色:");
             foreach (var name in Enum.GetNames(typeof(CharEnum))) Console.Write($" {name} ");
             Console.WriteLine();
             newInput = Console.ReadLine();
-            if (!string.IsNullOrWhiteSpace(newInput) && Enum.TryParse(newInput,true,out CharEnum newCharEnum)) 
+            if (!string.IsNullOrWhiteSpace(newInput) && Enum.TryParse(newInput, true, out CharEnum newCharEnum))
                 _defaultChar = newCharEnum;
             Console.WriteLine($"Char is set to: {_defaultChar.ToString()}");
-            
+
+            // 更新自動戰鬥
+            Console.Write("[Optional] 設定戰鬥模式:");
+            foreach (var name in Enum.GetNames(typeof(FightEnum))) Console.Write($" {name} ");
+            Console.WriteLine();
+            newInput = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(newInput) && Enum.TryParse(newInput, true, out FightEnum newFightEnum))
+                _defaultFight = newFightEnum;
+            Console.WriteLine($"Fight is set to: {_defaultFight.ToString()}");
+
             // 更新浮動CD時間
             Console.WriteLine($"[Optional] 設定浮動CD時間(預設{_randTime}毫秒):");
             newInput = Console.ReadLine();
-            if (!string.IsNullOrWhiteSpace(newInput) && int.TryParse(newInput,out var newRandTime)) 
+            if (!string.IsNullOrWhiteSpace(newInput) && int.TryParse(newInput, out var newRandTime))
                 _randTime = newRandTime;
             Console.WriteLine($"RandTime is set to: {_randTime}");
         }
@@ -350,7 +377,8 @@ namespace MyKirito
             {
                 var request = new HttpRequestMessage(HttpMethod.Post, "challenge")
                 {
-                    Content = new StringContent($"{{\"type\":1,\"opponentUID\":\"{uid}\",\"shout\":\"\",\"lv\":{lv}}}",
+                    Content = new StringContent(
+                        $"{{\"type\":{(int) _defaultFight},\"opponentUID\":\"{uid}\",\"shout\":\"\",\"lv\":{lv}}}",
                         Encoding.UTF8,
                         "application/json")
                 };
@@ -399,7 +427,7 @@ namespace MyKirito
                     Console.WriteLine(JsonSerializer.Serialize(myKirito,
                         new JsonSerializerOptions {WriteIndented = true}));
                     // 轉生限制條件：滿十等或死亡
-                    if (myKirito.Dead || (_defaultReIncarnationLevel>0 && myKirito.Lv >= _defaultReIncarnationLevel))
+                    if (myKirito.Dead || _defaultReIncarnationLevel > 0 && myKirito.Lv >= _defaultReIncarnationLevel)
                     {
                         // 計算轉生屬性點數
                         var freePoints = CheckPoint(myKirito.Lv);
@@ -415,7 +443,7 @@ namespace MyKirito
                         // Log動作結果
                         Console.WriteLine(result);
                         // PVP 
-                        if (DateTime.Now > _nextPvpTime)
+                        if (_defaultFight != FightEnum.None && DateTime.Now > _nextPvpTime)
                         {
                             result = await _myService.GetUserList(myKirito.Exp);
                             Console.WriteLine(result);
@@ -428,7 +456,7 @@ namespace MyKirito
 
                     Console.WriteLine($"獲得屬性小計：{_totalPoints}");
                     // 定時執行
-                    await Task.Delay(CheckTime + RandomCd.Next(0,_randTime), stoppingToken);
+                    await Task.Delay(CheckTime + RandomCd.Next(0, _randTime), stoppingToken);
                 }
             }
         }
