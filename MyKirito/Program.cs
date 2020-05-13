@@ -41,7 +41,14 @@ namespace MyKirito
             Silica,
             Rosalia,
             Hinamori,
-            Aizen
+            Aizen,
+            Asuna,
+            kibaou,
+            Hina,
+            Agil,
+            Rabbit,
+            Kuradeel,
+            Bradley,
         }
 
         // 行動版本號
