@@ -1,3 +1,5 @@
+![Build](https://github.com/jakeuj/MyKirito/workflows/Build/badge.svg)
+
 # 動畫推薦清單
 ![https://www.pixiv.net/artworks/78875342](78875342_p0.jpg)
 
