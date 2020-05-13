@@ -20,10 +20,9 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet publish -r win10-x64 -c Release -o ./artifacts
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        path: 'artifacts'
+    - name: Build project # This would actually build your project, using zip for an example artifact
+        run: |
+          zip --junk-paths my-artifact artifacts
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -45,6 +44,10 @@ jobs:
          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
-         asset_path: ./artifacts.zip
+         asset_path: ./my-artifact.zip
          asset_name: artifacts.zip
          asset_content_type: application/zip
+    - name: Upload a Build Artifact
+      uses: actions/upload-artifact@v2
+      with:
+        path: 'artifacts'
