@@ -95,6 +95,12 @@ namespace MyKirito
             // 接收重生等級參數
             if (args.Length > 1 && int.TryParse(args[1],out var newReLevel))
                 _defaultReIncarnationLevel = newReLevel;
+            // 接收行為參數
+            if (args.Length > 2 && Enum.TryParse(args[2],true,out ActionEnum newActEnum))
+                _defaultAct = newActEnum;
+            // 接收角色參數
+            if (args.Length > 3 && Enum.TryParse(args[3],true,out CharEnum newCharEnum))
+                _defaultChar = newCharEnum;
             
             // 初始化
             Init();
@@ -168,8 +174,8 @@ namespace MyKirito
             foreach (var name in Enum.GetNames(typeof(ActionEnum))) Console.Write($" {name} ");
             Console.WriteLine();
             newInput = Console.ReadLine();
-            if (!string.IsNullOrWhiteSpace(newInput))
-                _defaultAct = (ActionEnum) Enum.Parse(typeof(ActionEnum), newInput);
+            if (!string.IsNullOrWhiteSpace(newInput) && Enum.TryParse(newInput,true,out ActionEnum newActEnum))
+                _defaultAct = newActEnum;
             Console.WriteLine($"Action is set to: {_defaultAct.ToString()}");
 
             // 更新預設角色
@@ -177,7 +183,8 @@ namespace MyKirito
             foreach (var name in Enum.GetNames(typeof(CharEnum))) Console.Write($" {name} ");
             Console.WriteLine();
             newInput = Console.ReadLine();
-            if (!string.IsNullOrWhiteSpace(newInput)) _defaultChar = (CharEnum) Enum.Parse(typeof(CharEnum), newInput);
+            if (!string.IsNullOrWhiteSpace(newInput) && Enum.TryParse(newInput,true,out CharEnum newCharEnum)) 
+                _defaultChar = newCharEnum;
             Console.WriteLine($"Char is set to: {_defaultChar.ToString()}");
             
             // 更新浮動CD時間
