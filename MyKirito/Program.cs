@@ -23,24 +23,40 @@ namespace MyKirito
             Girl,
             Hunt
         }
-
+        
+        public enum CharEnum
+        {
+            Kirito,
+            Hatsumi,
+            Eugeo,
+            Sado,
+            Klein,
+            Kibaou,Hitsugaya,Muguruma,CharizardX,Reiner,Sinon,Lisbeth,Silica,Rosalia,Hinamori,Aizen
+        }
+        
+        // 預設角色
+        private static CharEnum _defaultChar = CharEnum.Kirito;
+        
+        // 行動版本號
+        private const int DoActionVersion = 2;
+        
         // 遊戲檢查時間闕值 (預設:90秒)
-        private const int CheckTime = 90000;
+        private const int CheckTime = 100000;
 
         // 遊戲Pvp檢查時間闕值 (預設:402秒)
         private const int PvpTime = 402;
-
-        // TODO:需移除
-        // 開發階段預設Token
+        
+        // Token
         private static string _token = string.Empty;
-
+        
+        //總獲得屬性點
         private static int _totalPoints;
 
         // Pvp計時器
         private static DateTime _nextPvpTime = DateTime.Now.AddSeconds(PvpTime);
 
         // 預設動作
-        private static ActionEnum _defaultAct = ActionEnum.Hunt;
+        private static ActionEnum _defaultAct = ActionEnum.Girl;
 
         // 額外屬性等級闕值
         private static readonly int[] AddPointLevel = {10, 16, 20, 23, 25, 27, 29, 31};
@@ -102,7 +118,7 @@ namespace MyKirito
                 if (!string.IsNullOrWhiteSpace(newInput))
                 {
                     _token = newInput;
-                    Console.WriteLine($"Token is update to: {newInput}");
+                    Console.WriteLine($"Token is set to: {newInput}");
                     break;
                 }
 
@@ -117,8 +133,19 @@ namespace MyKirito
             if (!string.IsNullOrWhiteSpace(newInput))
             {
                 _defaultAct = (ActionEnum) Enum.Parse(typeof(ActionEnum), newInput);
-                Console.WriteLine($"Action is update to: {_defaultAct.ToString()}");
             }
+            Console.WriteLine($"Action is set to: {_defaultAct.ToString()}");
+            
+            // 更新預設角色
+            Console.Write("[Optional] Input your char from:");
+            foreach (var name in Enum.GetNames(typeof(CharEnum))) Console.Write($" {name} ");
+            Console.WriteLine();
+            newInput = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(newInput))
+            {
+                _defaultChar = (CharEnum) Enum.Parse(typeof(CharEnum), newInput);
+            }
+            Console.WriteLine($"Char is set to: {_defaultChar.ToString()}");
         }
 
         //檢查獲得屬性點數
@@ -178,7 +205,7 @@ namespace MyKirito
                 var request = new HttpRequestMessage(HttpMethod.Post, "my-kirito/reincarnation");
                 // 將點數點到生命值
                 var restLoad =
-                    $"{{\"character\":\"kirito\",\"rattrs\":{{\"hp\":{freePoints},\"atk\":0,\"def\":0,\"stm\":0,\"agi\":0,\"spd\":0,\"tec\":0,\"int\":0,\"lck\":0}},\"useReset\":false}}";
+                    $"{{\"character\":\"{_defaultChar.ToString().ToLower()}\",\"rattrs\":{{\"hp\":{freePoints},\"atk\":0,\"def\":0,\"stm\":0,\"agi\":0,\"spd\":0,\"tec\":0,\"int\":0,\"lck\":0}},\"useReset\":false}}";
                 request.Content = new StringContent(restLoad, Encoding.UTF8, "application/json");
                 var client = _clientFactory.CreateClient("kiritoAPI");
                 // 送出轉生請求
@@ -199,7 +226,7 @@ namespace MyKirito
             {
                 var request = new HttpRequestMessage(HttpMethod.Post, "my-kirito/doaction")
                 {
-                    Content = new StringContent($"{{\"action\":\"{input.ToString().ToLower()}\"}}", Encoding.UTF8,
+                    Content = new StringContent($"{{\"action\":\"{input.ToString().ToLower()}{DoActionVersion}\"}}", Encoding.UTF8,
                         "application/json")
                 };
                 var client = _clientFactory.CreateClient("kiritoAPI");
