@@ -59,7 +59,7 @@ namespace MyKirito
         private static ActionEnum _defaultAct = ActionEnum.Girl;
 
         // 額外屬性等級闕值
-        private static readonly int[] AddPointLevel = {10, 16, 20, 23, 25, 27, 29, 31};
+        private static readonly int[] AddPointLevel = {15, 20, 23, 25};
 
         // 程式進入點
         private static async Task<int> Main(string[] args)
