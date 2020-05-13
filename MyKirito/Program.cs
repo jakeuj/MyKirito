@@ -23,7 +23,7 @@ namespace MyKirito
             Girl,
             Hunt
         }
-        
+
         public enum CharEnum
         {
             Kirito,
@@ -31,26 +31,39 @@ namespace MyKirito
             Eugeo,
             Sado,
             Klein,
-            Kibaou,Hitsugaya,Muguruma,CharizardX,Reiner,Sinon,Lisbeth,Silica,Rosalia,Hinamori,Aizen
+            Kibaou,
+            Hitsugaya,
+            Muguruma,
+            CharizardX,
+            Reiner,
+            Sinon,
+            Lisbeth,
+            Silica,
+            Rosalia,
+            Hinamori,
+            Aizen
         }
-        
-        // 預設角色
-        private static CharEnum _defaultChar = CharEnum.Kirito;
-        
+
         // 行動版本號
         private const int DoActionVersion = 2;
-        
+
         // 遊戲檢查時間闕值 (預設:90秒)
         private const int CheckTime = 100000;
 
         // 遊戲Pvp檢查時間闕值 (預設:402秒)
         private const int PvpTime = 402;
-        
+
+        // 預設角色
+        private static CharEnum _defaultChar = CharEnum.Kirito;
+
         // Token
         private static string _token = string.Empty;
-        
+
         //總獲得屬性點
         private static int _totalPoints;
+        
+        //自動投胎等級 (0為不自動投胎，預設:0級)
+        private static int _defaultReIncarnationLevel;
 
         // Pvp計時器
         private static DateTime _nextPvpTime = DateTime.Now.AddSeconds(PvpTime);
@@ -64,8 +77,13 @@ namespace MyKirito
         // 程式進入點
         private static async Task<int> Main(string[] args)
         {
+            // 接收Token參數
             if (args.Length > 0)
                 _token = args[0];
+            // 接收重生等級參數
+            if (args.Length > 1 && int.TryParse(args[1],out var newReLevel))
+                _defaultReIncarnationLevel = newReLevel;
+            
             // 初始化
             Init();
             using var host = Host.CreateDefaultBuilder(args)
@@ -122,29 +140,32 @@ namespace MyKirito
                     Console.WriteLine($"Token is set to: {_token}");
                     break;
                 }
+
                 Console.WriteLine("[Required] Input your token:");
             }
+            
+            // 更新預設角色
+            Console.WriteLine($"[Optional] 設定自動重生等級(預設{_defaultReIncarnationLevel}級,0=不自殺):");
+            newInput = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(newInput) && int.TryParse(newInput,out var newLevel)) 
+                _defaultReIncarnationLevel = newLevel;
+            Console.WriteLine($"ReIncarnation level is set to: {_defaultReIncarnationLevel}");
 
             // 更新預設動作
-            Console.Write("[Optional] Input your action from:");
+            Console.Write("[Optional] 設定主要動作:");
             foreach (var name in Enum.GetNames(typeof(ActionEnum))) Console.Write($" {name} ");
             Console.WriteLine();
             newInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(newInput))
-            {
                 _defaultAct = (ActionEnum) Enum.Parse(typeof(ActionEnum), newInput);
-            }
             Console.WriteLine($"Action is set to: {_defaultAct.ToString()}");
-            
+
             // 更新預設角色
-            Console.Write("[Optional] Input your char from:");
+            Console.Write("[Optional] 這定重生角色:");
             foreach (var name in Enum.GetNames(typeof(CharEnum))) Console.Write($" {name} ");
             Console.WriteLine();
             newInput = Console.ReadLine();
-            if (!string.IsNullOrWhiteSpace(newInput))
-            {
-                _defaultChar = (CharEnum) Enum.Parse(typeof(CharEnum), newInput);
-            }
+            if (!string.IsNullOrWhiteSpace(newInput)) _defaultChar = (CharEnum) Enum.Parse(typeof(CharEnum), newInput);
             Console.WriteLine($"Char is set to: {_defaultChar.ToString()}");
         }
 
@@ -225,7 +246,8 @@ namespace MyKirito
             {
                 var request = new HttpRequestMessage(HttpMethod.Post, "my-kirito/doaction")
                 {
-                    Content = new StringContent($"{{\"action\":\"{input.ToString().ToLower()}{DoActionVersion}\"}}", Encoding.UTF8,
+                    Content = new StringContent($"{{\"action\":\"{input.ToString().ToLower()}{DoActionVersion}\"}}",
+                        Encoding.UTF8,
                         "application/json")
                 };
                 var client = _clientFactory.CreateClient("kiritoAPI");
@@ -351,7 +373,7 @@ namespace MyKirito
                     Console.WriteLine(JsonSerializer.Serialize(myKirito,
                         new JsonSerializerOptions {WriteIndented = true}));
                     // 轉生限制條件：滿十等或死亡
-                    if (myKirito.Dead || myKirito.Lv >= 10)
+                    if (myKirito.Dead || (_defaultReIncarnationLevel>0 && myKirito.Lv >= _defaultReIncarnationLevel))
                     {
                         // 計算轉生屬性點數
                         var freePoints = CheckPoint(myKirito.Lv);
