@@ -53,13 +53,18 @@ namespace MyKirito
 
         // 行動版本號
         private const int DoActionVersion = 2;
-
-        // 遊戲檢查時間闕值 (預設:90秒)
+        
+        // 遊戲Pvp檢查時間闕值 (預設:400秒)
+        private const int PvpTime = 400;
+        
+        // 遊戲檢查時間闕值 (預設:100秒)
         private const int CheckTime = 100000;
-
-        // 遊戲Pvp檢查時間闕值 (預設:402秒)
-        private const int PvpTime = 402;
-
+        
+        // 亂數產生器
+        private static readonly Random RandomCd = new Random();
+        
+        // 亂數最大值 (預設:10秒)
+        private static int _randTime = 10000;
         // 預設角色
         private static CharEnum _defaultChar = CharEnum.Kirito;
 
@@ -174,6 +179,13 @@ namespace MyKirito
             newInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(newInput)) _defaultChar = (CharEnum) Enum.Parse(typeof(CharEnum), newInput);
             Console.WriteLine($"Char is set to: {_defaultChar.ToString()}");
+            
+            // 更新浮動CD時間
+            Console.WriteLine($"[Optional] 設定浮動CD時間(預設{_randTime}毫秒):");
+            newInput = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(newInput) && int.TryParse(newInput,out var newRandTime)) 
+                _randTime = newRandTime;
+            Console.WriteLine($"RandTime is set to: {_randTime}");
         }
 
         //檢查獲得屬性點數
@@ -409,7 +421,7 @@ namespace MyKirito
 
                     Console.WriteLine($"獲得屬性小計：{_totalPoints}");
                     // 定時執行
-                    await Task.Delay(CheckTime, stoppingToken);
+                    await Task.Delay(CheckTime + RandomCd.Next(0,_randTime), stoppingToken);
                 }
             }
         }
