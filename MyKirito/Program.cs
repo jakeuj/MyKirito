@@ -278,7 +278,7 @@ namespace MyKirito
                 var request = new HttpRequestMessage(HttpMethod.Post, "my-kirito/reincarnation");
                 // 將點數點到生命值
                 var restLoad =
-                    $"{{\"character\":\"{_defaultChar.ToString().ToLower()}\",\"rattrs\":{{\"hp\":{freePoints},\"atk\":0,\"def\":0,\"stm\":0,\"agi\":0,\"spd\":0,\"tec\":0,\"int\":0,\"lck\":0}},\"useReset\":false}}";
+                    $"{{\"character\":\"{_defaultChar.ToString().ToLower()}\",\"rattrs\":{{\"hp\":0,\"atk\":0,\"def\":0,\"stm\":0,\"agi\":0,\"spd\":0,\"tec\":0,\"int\":{freePoints},\"lck\":0}},\"useReset\":false}}";
                 request.Content = new StringContent(restLoad, Encoding.UTF8, "application/json");
                 var client = _clientFactory.CreateClient("kiritoAPI");
                 // 送出轉生請求
