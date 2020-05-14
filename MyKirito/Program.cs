@@ -68,13 +68,13 @@ namespace MyKirito
         private const int PvpTime = 400;
 
         // 遊戲檢查時間闕值 (預設:100秒)
-        private const int CheckTime = 100000;
+        private const int CheckTime = 100;
 
         // 亂數產生器
         private static readonly Random RandomCd = new Random();
 
-        // 亂數最大值 (預設:10秒)
-        private static int _randTime = 10000;
+        // 亂數最大值 (預設:50秒)
+        private static int _randTime = 50;
 
         // 預設角色
         private static CharEnum _defaultChar = CharEnum.Kirito;
@@ -165,7 +165,7 @@ namespace MyKirito
         private static void Init()
         {
             // 更新授權Token
-            Console.WriteLine("[Required] Input your token:");
+            Console.WriteLine("[必要] 輸入 Token:");
             string newInput;
             while (true)
             {
@@ -177,45 +177,45 @@ namespace MyKirito
                     break;
                 }
 
-                Console.WriteLine("[Required] Input your token:");
+                Console.WriteLine("[Required] 輸入 token:");
             }
 
             // 更新預設角色
-            Console.WriteLine($"[Optional] 設定自動重生等級(預設{_defaultReIncarnationLevel}級,0=不自殺):");
+            Console.WriteLine($"[選填] 設定自動重生等級,0=不自殺(預設：{_defaultReIncarnationLevel}):");
             newInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(newInput) && int.TryParse(newInput, out var newLevel))
                 _defaultReIncarnationLevel = newLevel;
             Console.WriteLine($"ReIncarnation level is set to: {_defaultReIncarnationLevel}");
 
             // 更新預設動作
-            Console.Write("[Optional] 設定主要動作:");
+            Console.Write($"[選填] 設定主要動作(預設：{_defaultAct}):");
             foreach (var name in Enum.GetNames(typeof(ActionEnum))) Console.Write($" {name} ");
             Console.WriteLine();
             newInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(newInput) && Enum.TryParse(newInput, true, out ActionEnum newActEnum))
                 _defaultAct = newActEnum;
-            Console.WriteLine($"Action is set to: {_defaultAct.ToString()}");
+            Console.WriteLine($"Action is set to: {_defaultAct}");
 
             // 更新預設角色
-            Console.Write("[Optional] 設定重生角色:");
+            Console.Write($"[選填] 設定重生角色(預設：{_defaultChar}):");
             foreach (var name in Enum.GetNames(typeof(CharEnum))) Console.Write($" {name} ");
             Console.WriteLine();
             newInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(newInput) && Enum.TryParse(newInput, true, out CharEnum newCharEnum))
                 _defaultChar = newCharEnum;
-            Console.WriteLine($"Char is set to: {_defaultChar.ToString()}");
+            Console.WriteLine($"Char is set to: {_defaultChar}");
 
             // 更新自動戰鬥
-            Console.Write("[Optional] 設定戰鬥模式:");
+            Console.Write($"[選填] 設定戰鬥模式(預設：{_defaultFight}):");
             foreach (var name in Enum.GetNames(typeof(FightEnum))) Console.Write($" {name} ");
             Console.WriteLine();
             newInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(newInput) && Enum.TryParse(newInput, true, out FightEnum newFightEnum))
                 _defaultFight = newFightEnum;
-            Console.WriteLine($"Fight is set to: {_defaultFight.ToString()}");
+            Console.WriteLine($"Fight is set to: {_defaultFight}");
 
             // 更新浮動CD時間
-            Console.WriteLine($"[Optional] 設定浮動CD時間(預設{_randTime}毫秒):");
+            Console.WriteLine($"[選填] 設定基礎冷卻時間額外增加之浮動CD秒數上限(預設：{_randTime}):");
             newInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(newInput) && int.TryParse(newInput, out var newRandTime))
                 _randTime = newRandTime;
@@ -456,7 +456,10 @@ namespace MyKirito
 
                     Console.WriteLine($"獲得屬性小計：{_totalPoints}");
                     // 定時執行
-                    await Task.Delay(CheckTime + RandomCd.Next(0, _randTime), stoppingToken);
+                    if (_randTime > 0)
+                        await Task.Delay(CheckTime * 1000 + RandomCd.Next(0, _randTime * 1000), stoppingToken);
+                    else
+                        await Task.Delay(CheckTime * 1000, stoppingToken);
                 }
             }
         }
