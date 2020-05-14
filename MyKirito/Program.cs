@@ -38,6 +38,9 @@ namespace MyKirito
             // 接收安靜模式參數
             if (args.Length > 6 && int.TryParse(args[6], out var isSilence) && isSilence > 0)
                 _isAsk = false;
+            // 接收PVP對手經驗值增量參數
+            if (args.Length > 7 && int.TryParse(args[7], out var newExpPVP))
+                AppSettings._expPVP = newExpPVP;
 
             // 初始化
             if (_isAsk)
@@ -93,11 +96,11 @@ namespace MyKirito
                 if (!string.IsNullOrWhiteSpace(newInput)) _token = newInput;
                 if (!string.IsNullOrWhiteSpace(_token))
                 {
-                    Console.WriteLine($"Token is set to: {_token}");
+                    Console.WriteLine($"Token 目前設定為 {_token}");
                     break;
                 }
 
-                Console.WriteLine("[Required] 輸入 token:");
+                Console.WriteLine("[必要] 輸入 token:");
             }
 
             // 更新預設角色
@@ -105,7 +108,7 @@ namespace MyKirito
             newInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(newInput) && int.TryParse(newInput, out var newLevel))
                 AppSettings._defaultReIncarnationLevel = newLevel;
-            Console.WriteLine($"ReIncarnation level is set to: {AppSettings._defaultReIncarnationLevel}");
+            Console.WriteLine($"等擊達到 {AppSettings._defaultReIncarnationLevel} 時自動重生");
 
             // 更新預設動作
             Console.Write($"[選填] 設定主要動作(預設：{AppSettings._defaultAct}):");
@@ -114,7 +117,7 @@ namespace MyKirito
             newInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(newInput) && Enum.TryParse(newInput, true, out ActionEnum newActEnum))
                 AppSettings._defaultAct = newActEnum;
-            Console.WriteLine($"Action is set to: {AppSettings._defaultAct}");
+            Console.WriteLine($"日常行為模式 {AppSettings._defaultAct}");
 
             // 更新預設角色
             Console.Write($"[選填] 設定重生角色(預設：{AppSettings._defaultChar}):");
@@ -123,7 +126,7 @@ namespace MyKirito
             newInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(newInput) && Enum.TryParse(newInput, true, out CharEnum newCharEnum))
                 AppSettings._defaultChar = newCharEnum;
-            Console.WriteLine($"Char is set to: {AppSettings._defaultChar}");
+            Console.WriteLine($"重生時將選擇角色 {AppSettings._defaultChar}");
 
             // 更新自動戰鬥
             Console.Write($"[選填] 設定戰鬥模式(預設：{AppSettings._defaultFight}):");
@@ -132,7 +135,7 @@ namespace MyKirito
             newInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(newInput) && Enum.TryParse(newInput, true, out FightEnum newFightEnum))
                 AppSettings._defaultFight = newFightEnum;
-            Console.WriteLine($"Fight is set to: {AppSettings._defaultFight}");
+            Console.WriteLine($"PVP戰鬥模式為 {AppSettings._defaultFight}");
 
             // 更新浮動CD時間
             Console.WriteLine($"[選填] 設定基礎冷卻時間({Const.CheckTime})的額外浮動秒數上限(預設：{AppSettings._randTime})，共{Const.CheckTime+AppSettings._randTime}秒:");
@@ -140,6 +143,13 @@ namespace MyKirito
             if (!string.IsNullOrWhiteSpace(newInput) && int.TryParse(newInput, out var newRandTime))
                 AppSettings._randTime = newRandTime;
             Console.WriteLine($"冷卻時間設定介於 {Const.CheckTime} 秒 ~ {Const.CheckTime + AppSettings._randTime} 秒");
+
+            // 更新PVP對手經驗值增量
+            Console.WriteLine($"[選填] 設定PVP對手經驗值增量(預設：{AppSettings._expPVP})");
+            newInput = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(newInput) && int.TryParse(newInput, out var newExpPVP))
+                AppSettings._expPVP = newExpPVP;
+            Console.WriteLine($"PVP目前會找高於自身經驗值 {AppSettings._expPVP} 的對手");
         }
     }
 }
