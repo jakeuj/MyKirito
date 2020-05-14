@@ -19,7 +19,7 @@ jobs:
     - name: Install dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet publish -r win10-x64 -c Release -o ./artifacts
+      run: dotnet publish -r win10-x64 -c Release -o ./artifacts --self-contained false
     - name: Zip Folder
       run: zip -r release.zip ./artifacts
     - name: Release to Github
@@ -33,9 +33,13 @@ jobs:
         tag_name: ${{ github.run_id }}
         release_name: Release ${{ github.run_id }}
         body: |
-          Changes in this Release
-          - First Change
-          - Second Change
+          - Require
+          [.NET Core Runtime 3.1](https://dotnet.microsoft.com/download/dotnet-core/3.1)
+          - Use
+          dotnet MyKirito.dll {Token} {重生等級} {行為} {角色} {PVP}  {CD} {安靜}
+          EX：十五歲時自殺，重生到異世界發現自己是尤吉歐，
+          每天汁不同的妹，沒事就找人打架鬧事，沒事休息一兩百秒，安靜！
+          `dotnet MyKirito.dll ABC123.456 15 Eat Eugeo Hard 100 1`
         draft: false
         prerelease: false
     - name: Upload Release Asset
@@ -48,7 +52,3 @@ jobs:
          asset_path: ./release.zip
          asset_name: release.zip
          asset_content_type: application/zip
-    - name: Upload a Build Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        path: 'artifacts'
