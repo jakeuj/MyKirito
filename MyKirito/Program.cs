@@ -254,14 +254,14 @@ namespace MyKirito
         public interface IMyService
         {
             // 遊戲主畫面操作
-            Task<string> DoAction(ActionEnum input);
+            Task<bool> DoAction(ActionEnum input);
 
             // 遊戲投胎機制
             Task<string> ReIncarnation(int freePoints);
 
             // 取得遊戲角色資料
             Task<MyKiritoDto> GetMyKiritoFn();
-            Task<string> GetUserList(int exp);
+            Task<bool> GetUserList(int exp);
         }
 
         // 遊戲服務介面實作類別
@@ -296,7 +296,9 @@ namespace MyKirito
                 if (!response.IsSuccessStatusCode) return $"StatusCode: {response.StatusCode}";
                 // 總計下屬性點
                 _totalPoints += freePoints;
-                return await response.Content.ReadAsStringAsync();
+                var result = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(result);
+                return result;
             }
 
             /// <summary>
@@ -304,8 +306,9 @@ namespace MyKirito
             /// </summary>
             /// <param name="input">要汁妹還是做啥來著</param>
             /// <returns>結果</returns>
-            public async Task<string> DoAction(ActionEnum input)
+            public async Task<bool> DoAction(ActionEnum input)
             {
+                Console.WriteLine($"DoAction {input} Result:");
                 var request = new HttpRequestMessage(HttpMethod.Post, "my-kirito/doaction")
                 {
                     Content = new StringContent($"{{\"action\":\"{input.ToString().ToLower()}{DoActionVersion}\"}}",
@@ -316,9 +319,9 @@ namespace MyKirito
                 // 送出行動請求
                 var response = await client.SendAsync(request);
                 // 結果
-                if (response.IsSuccessStatusCode)
-                    return await response.Content.ReadAsStringAsync();
-                return $"StatusCode: {response.StatusCode}";
+                var result = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(result);
+                return response.IsSuccessStatusCode;
             }
 
             /// <summary>
@@ -327,30 +330,39 @@ namespace MyKirito
             /// <returns>角色物件JSON</returns>
             public async Task<MyKiritoDto> GetMyKiritoFn()
             {
+                Console.WriteLine("GetMyKiritoFn");
                 var request = new HttpRequestMessage(HttpMethod.Get, "getMyKiritoFn");
                 var client = _clientFactory.CreateClient("kiritoInfo");
                 var response = await client.SendAsync(request);
                 // 不成功則空
-                if (!response.IsSuccessStatusCode) return new MyKiritoDto();
+                if (!response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("GetMyKiritoFn fail...");
+                    return null;
+                }
                 // 成功則反序列化後返回角色物件
                 var res = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<MyKiritoDto>(res,
-                    new JsonSerializerOptions {PropertyNameCaseInsensitive = true});
+                var result = JsonSerializer.Deserialize<MyKiritoDto>(res,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                // Log角色資料
+                Console.WriteLine(JsonSerializer.Serialize(result,
+                    new JsonSerializerOptions { WriteIndented = true }));
+                return result;
             }
 
             // 查詢PvP玩家列表
-            public async Task<string> GetUserList(int exp)
+            public async Task<bool> GetUserList(int exp)
             {
+                bool isDone = false;
                 var request = new HttpRequestMessage(HttpMethod.Get, $"user-list?exp={exp}");
                 var client = _clientFactory.CreateClient("kiritoAPI");
                 // 送出行動請求
                 var response = await client.SendAsync(request);
+                var result = await response.Content.ReadAsStringAsync();
                 // 結果
                 if (response.IsSuccessStatusCode)
                 {
-                    var res = await response.Content.ReadAsStringAsync();
-
-                    using (var document = JsonDocument.Parse(res))
+                    using (var document = JsonDocument.Parse(result))
                     {
                         var root = document.RootElement;
                         var studentsElement = root.GetProperty("userList");
@@ -365,25 +377,25 @@ namespace MyKirito
 
                             var lv = lvElement.GetInt32();
 
-                            var (isSuccess, msg) = await Challenge(uid, lv);
-
-                            if (isSuccess)
+                            if (await Challenge(uid, lv))
                             {
                                 _nextPvpTime = _nextPvpTime.AddSeconds(PvpTime);
-                                return msg;
+                                isDone = true;
+                                break;
                             }
+                            await Task.Delay(2 * 1000);
                         }
                     }
-
-                    return await response.Content.ReadAsStringAsync();
                 }
-
-                return $"StatusCode: {response.StatusCode}";
+                else
+                    Console.WriteLine(result);                
+                return isDone;
             }
 
             // 出戰Pvp
-            private async Task<(bool isSuccess, string msg)> Challenge(string uid, int lv)
+            private async Task<bool> Challenge(string uid, int lv)
             {
+                Console.WriteLine($"Challenge {uid} {lv}");
                 var request = new HttpRequestMessage(HttpMethod.Post, "challenge")
                 {
                     Content = new StringContent(
@@ -394,10 +406,10 @@ namespace MyKirito
                 var client = _clientFactory.CreateClient("kiritoAPI");
                 // 送出行動請求
                 var response = await client.SendAsync(request);
+                var result = response.Content.ReadAsStringAsync();
+                Console.WriteLine(result);
                 // 結果
-                return response.IsSuccessStatusCode
-                    ? (true, await response.Content.ReadAsStringAsync())
-                    : (false, $"StatusCode: {response.StatusCode}");
+                return response.IsSuccessStatusCode;
             }
         }
 
@@ -432,43 +444,35 @@ namespace MyKirito
                         "Scoped Processing Service is working. Count: {Count}", _executionCount);
                     // 取得角色資料
                     var myKirito = await _myService.GetMyKiritoFn();
-                    // Log角色資料
-                    Console.WriteLine(JsonSerializer.Serialize(myKirito,
-                        new JsonSerializerOptions {WriteIndented = true}));
-                    // 轉生限制條件：滿十等或死亡
-                    if (myKirito.Dead || _defaultReIncarnationLevel > 0 && myKirito.Lv >= _defaultReIncarnationLevel)
+                    if (myKirito != null)
                     {
-                        // 計算轉生屬性點數
-                        var freePoints = CheckPoint(myKirito.Lv);
-                        // 開始轉生
-                        var result = await _myService.ReIncarnation(freePoints);
-                        // Log轉生結果
-                        Console.WriteLine(result);
-                    }
-                    else
-                    {
-                        // 日常動作：汁妹之類的
-                        var result = await _myService.DoAction(_defaultAct);
-                        // Log動作結果
-                        Console.WriteLine(result);
-                        // PVP 
-                        if (_defaultFight != FightEnum.None && DateTime.Now > _nextPvpTime)
+                        // 轉生限制條件：滿十等或死亡
+                        if (myKirito.Dead || (_defaultReIncarnationLevel > 0 && myKirito.Lv >= _defaultReIncarnationLevel))
                         {
-                            result = await _myService.GetUserList(myKirito.Exp);
-                            Console.WriteLine(result);
+                            // 計算轉生屬性點數
+                            var freePoints = CheckPoint(myKirito.Lv);
+                            // 開始轉生
+                            var result = await _myService.ReIncarnation(freePoints);
                         }
                         else
                         {
-                            Console.WriteLine($"Next PVP time is {_nextPvpTime.ToShortTimeString()}");
+                            // 日常動作：汁妹之類的
+                            await _myService.DoAction(_defaultAct);
+                            // PVP 
+                            if (_defaultFight != FightEnum.None && DateTime.Now > _nextPvpTime)
+                            {
+                                await _myService.GetUserList(myKirito.Exp);
+                            }
                         }
                     }
-
-                    Console.WriteLine($"獲得屬性小計：{_totalPoints}");
                     // 定時執行
+                    int addTime;
                     if (_randTime > 0)
-                        await Task.Delay((CheckTime + RandomCd.Next(1, _randTime)) * 1000, stoppingToken);
+                        addTime = (CheckTime + RandomCd.Next(1, _randTime));
                     else
-                        await Task.Delay(CheckTime * 1000, stoppingToken);
+                        addTime = CheckTime;
+                    Console.WriteLine($"此次運行總獲得屬性點：{_totalPoints}, 下次戰鬥： {_nextPvpTime}, 等待 {addTime} 秒...");
+                    await Task.Delay(addTime * 1000, stoppingToken);
                 }
             }
         }
