@@ -73,20 +73,13 @@ namespace MyKirito
                     else
                     {
                         // 日常動作：汁妹之類的
-                        await _myService.DoAction(AppSettings._defaultAct);
+                        if(await _myService.DoAction(AppSettings._defaultAct))
                         // PVP 
-                        if (AppSettings._defaultFight != FightEnum.None)
+                        if (AppSettings._defaultFight != FightEnum.None && DateTime.Now >= _nextPvpTime)
                         {
-                            if (DateTime.Now >= _nextPvpTime)
-                            {
-                                Console.WriteLine("Start GetUserList");
-                                if (await _myService.GetUserList(myKirito.Exp))
-                                    _nextPvpTime = _nextPvpTime.AddSeconds(Const.PvpTime);
-                            }
-                            else Console.WriteLine($" {_nextPvpTime}");
+                            if (await _myService.GetUserList(myKirito.Exp))
+                                _nextPvpTime = _nextPvpTime.AddSeconds(Const.PvpTime);
                         }
-                        else
-                            Console.WriteLine($"{AppSettings._defaultFight}");
                     }
                 }
                 // 定時執行

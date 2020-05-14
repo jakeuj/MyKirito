@@ -45,7 +45,7 @@ namespace MyKirito
         /// <returns>結果</returns>
         public async Task<bool> ReIncarnation(int freePoints)
         {
-            Console.WriteLine($"獲得 {freePoints} 屬性");
+            Console.WriteLine($"ReIncarnation {freePoints}");
             var request = new HttpRequestMessage(HttpMethod.Post, "my-kirito/reincarnation");
             // 將點數點到生命值
             var restLoad =
@@ -55,8 +55,13 @@ namespace MyKirito
             // 送出轉生請求
             var response = await _clientkiritoAPI.SendAsync(request);
             // 結果
-            var result = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(result);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(result);
+            }
+            else
+                Console.WriteLine($"ReIncarnation {response.StatusCode}");
             return response.IsSuccessStatusCode;
         }
 
@@ -78,8 +83,13 @@ namespace MyKirito
             // 送出行動請求
             var response = await _clientkiritoAPI.SendAsync(request);
             // 結果
-            var result = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(result);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(result);
+            }
+            else
+                Console.WriteLine($"DoAction {response.StatusCode}");
             return response.IsSuccessStatusCode;
         }
 
@@ -89,14 +99,14 @@ namespace MyKirito
         /// <returns>角色物件JSON</returns>
         public async Task<MyKiritoDto> GetMyKiritoFn()
         {
-            Console.Write("GetMyKiritoFn  Result: ");
+            Console.WriteLine("GetMyKiritoFn  Result: ");
             var request = new HttpRequestMessage(HttpMethod.Get, "getMyKiritoFn");
             //var client = _clientFactory.CreateClient("kiritoInfo");
             var response = await _clientkiritoInfo.SendAsync(request);
             // 不成功則空
             if (!response.IsSuccessStatusCode)
             {
-                Console.WriteLine("GetMyKiritoFn fail...");
+                Console.WriteLine($"GetMyKiritoFn {response.StatusCode}");
                 return null;
             }
             // 成功則反序列化後返回角色物件
@@ -118,55 +128,54 @@ namespace MyKirito
             //var client = _clientFactory.CreateClient("kiritoAPI");
             // 送出行動請求
             var response = await _clientkiritoAPI.SendAsync(request);
-            var result = await response.Content.ReadAsStringAsync();
+            
             
             // 結果
             if (response.IsSuccessStatusCode)
             {
+                var result = await response.Content.ReadAsStringAsync();
                 using (var document = JsonDocument.Parse(result))
                 {
                     var root = document.RootElement;
                     var studentsElement = root.GetProperty("userList");
                     foreach (var student in studentsElement.EnumerateArray())
                     {
-                        Console.WriteLine($"foreach EnumerateArray start");
                         if (!student.TryGetProperty("uid", out var gradeElement))
                         {
                             Console.WriteLine($"目標uid錯誤 {gradeElement}");
                             continue;
-                        }
-                            
-                        if (!student.TryGetProperty("lv", out var lvElement))
+                        }                            
+                        else if (!student.TryGetProperty("lv", out var lvElement))
                         {
                             Console.WriteLine($"目標lv錯誤 {lvElement}");
                             continue;
                         }
-                        if (!student.TryGetProperty("color", out var colorElement))
+                        else if(!student.TryGetProperty("color", out var colorElement))
                         {
                             Console.WriteLine($"目標color錯誤 {colorElement}");
                             continue;
                         }
-                        if (colorElement.GetString() == "grey")
+                        else if(colorElement.GetString() == "grey")
                         {
                             Console.WriteLine($"目標已死亡");
                             continue;
                         }
-
-                        Console.WriteLine($"foreach EnumerateArray proc");
-                        var uid = gradeElement.GetString();
-
-                        var lv = lvElement.GetInt32();
-
-                        if (await Challenge(uid, lv))
+                        else
                         {
-                            isDone = true;
-                            break;
-                        }
-                        await Task.Delay(2 * 1000);
+                            var uid = gradeElement.GetString();
+
+                            var lv = lvElement.GetInt32();
+
+                            if (await Challenge(uid, lv))
+                            {
+                                isDone = true;
+                                break;
+                            }
+                            await Task.Delay(2 * 1000);
+                        }                            
                     }
-                    Console.WriteLine($"foreach EnumerateArray end");
                 }
-            }else Console.WriteLine(result);
+            }else Console.WriteLine($"GetUserList {response.StatusCode}");
             return isDone;
         }
 
@@ -184,11 +193,17 @@ namespace MyKirito
             //var client = _clientFactory.CreateClient("kiritoAPI");
             // 送出行動請求
             var response = await _clientkiritoAPI.SendAsync(request);
-            var result = await response.Content.ReadAsStringAsync();
-            
-            Console.WriteLine($"{response.StatusCode} {result}");
-            if (response.StatusCode == HttpStatusCode.BadRequest)
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"{response.StatusCode} {result}");
+            }else if (response.StatusCode == HttpStatusCode.BadRequest)
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"{response.StatusCode} {result}");
                 return true;
+            }
+            else Console.WriteLine($"GetUserList {response.StatusCode}");
             // 結果
             return response.IsSuccessStatusCode;
         }
