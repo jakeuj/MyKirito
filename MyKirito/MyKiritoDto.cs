@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MyKirito
+﻿namespace MyKirito
 {
     // 角色資料傳輸物件
     public class MyKiritoDto

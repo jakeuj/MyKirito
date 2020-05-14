@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MyKirito
+﻿namespace MyKirito
 {
     // 行動列舉值
     public enum ActionEnum

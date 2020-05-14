@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -13,7 +12,7 @@ namespace MyKirito
         private static string _token = string.Empty;
 
         // 詢問設定開關
-        private static bool _isAsk= true;
+        private static bool _isAsk = true;
 
         // 程式進入點
         private static async Task<int> Main(string[] args)
@@ -41,7 +40,7 @@ namespace MyKirito
                 _isAsk = false;
 
             // 初始化
-            if(_isAsk)
+            if (_isAsk)
                 Init();
             using var host = Host.CreateDefaultBuilder(args)
                 .ConfigureLogging(logging =>
@@ -136,11 +135,11 @@ namespace MyKirito
             Console.WriteLine($"Fight is set to: {AppSettings._defaultFight}");
 
             // 更新浮動CD時間
-            Console.WriteLine($"[選填] 設定基礎冷卻時間額外增加之浮動CD秒數上限(預設：{AppSettings._randTime}):");
+            Console.WriteLine($"[選填] 設定基礎冷卻時間({Const.CheckTime})的額外浮動秒數上限(預設：{AppSettings._randTime})，共{Const.CheckTime+AppSettings._randTime}秒:");
             newInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(newInput) && int.TryParse(newInput, out var newRandTime))
                 AppSettings._randTime = newRandTime;
-            Console.WriteLine($"RandTime is set to: {AppSettings._randTime}");
+            Console.WriteLine($"冷卻時間設定介於 {Const.CheckTime} 秒 ~ {Const.CheckTime + AppSettings._randTime} 秒");
         }
     }
 }

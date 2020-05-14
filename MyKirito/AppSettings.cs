@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace MyKirito
+﻿namespace MyKirito
 {
     public class AppSettings
     {
         // 額外屬性等級闕值
-        public static readonly int[] AddPointLevel = { 15, 20, 23, 25 };
+        public static readonly int[] AddPointLevel = {15, 20, 23, 25};
 
         // 預設動作
         public static ActionEnum _defaultAct = ActionEnum.Girl;
