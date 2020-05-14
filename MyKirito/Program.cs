@@ -67,14 +67,14 @@ namespace MyKirito
         // 遊戲Pvp檢查時間闕值 (預設:400秒)
         private const int PvpTime = 400;
 
-        // 遊戲檢查時間闕值 (預設:100秒)
+        // 遊戲檢查基本冷卻時間 (預設:100秒)
         private const int CheckTime = 100;
 
         // 亂數產生器
         private static readonly Random RandomCd = new Random();
 
-        // 亂數最大值 (預設:50秒)
-        private static int _randTime = 50;
+        // 遊戲檢查額外冷卻時間浮動上限 (預設:100秒)
+        private static int _randTime = 100;
 
         // 預設角色
         private static CharEnum _defaultChar = CharEnum.Kirito;
@@ -101,6 +101,8 @@ namespace MyKirito
         // 額外屬性等級闕值
         private static readonly int[] AddPointLevel = {15, 20, 23, 25};
 
+        private static bool _isAsk= true;
+
         // 程式進入點
         private static async Task<int> Main(string[] args)
         {
@@ -119,9 +121,16 @@ namespace MyKirito
             // 接收戰鬥參數
             if (args.Length > 4 && Enum.TryParse(args[4], true, out FightEnum newFightEnum))
                 _defaultFight = newFightEnum;
+            // 接收亂數最大值參數
+            if (args.Length > 5 && int.TryParse(args[5], out var newRandTime))
+                _randTime = newRandTime;
+            // 接收安靜模式參數
+            if (args.Length > 6 && int.TryParse(args[6], out var isSilence) && isSilence > 0)
+                _isAsk = false;
 
             // 初始化
-            Init();
+            if(_isAsk)
+                Init();
             using var host = Host.CreateDefaultBuilder(args)
                 .ConfigureLogging(logging =>
                 {
@@ -457,7 +466,7 @@ namespace MyKirito
                     Console.WriteLine($"獲得屬性小計：{_totalPoints}");
                     // 定時執行
                     if (_randTime > 0)
-                        await Task.Delay(CheckTime * 1000 + RandomCd.Next(0, _randTime * 1000), stoppingToken);
+                        await Task.Delay((CheckTime + RandomCd.Next(1, _randTime)) * 1000, stoppingToken);
                     else
                         await Task.Delay(CheckTime * 1000, stoppingToken);
                 }
