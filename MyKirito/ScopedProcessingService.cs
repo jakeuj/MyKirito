@@ -63,7 +63,7 @@ namespace MyKirito
                         // 日常動作：汁妹之類的
                         if (await _myService.DoAction(AppSettings._defaultAct))
                             // PVP 
-                            if (AppSettings._defaultFight != FightEnum.None && DateTime.Now >= _nextPvpTime)
+                            if (AppSettings._defaultFight != FightEnum.None && DateTime.Now > _nextPvpTime)
                                 if (await _myService.GetUserList(myKirito.Exp + AppSettings._expPVP))
                                     _nextPvpTime = _nextPvpTime.AddSeconds(Const.PvpTime);
                     }
@@ -75,7 +75,7 @@ namespace MyKirito
                     addTime = Const.CheckTime + RandomCd.Next(1, AppSettings._randTime);
                 else
                     addTime = Const.CheckTime;
-                Console.WriteLine($"此次運行總獲得屬性點：{_totalPoints}, 下次戰鬥： {_nextPvpTime}, 等待 {addTime} 秒...");
+                Console.WriteLine($"屬性小計：{_totalPoints}, 下次戰鬥： {_nextPvpTime}, 等待 {addTime} 秒...");
                 await Task.Delay(addTime * 1000, stoppingToken);
             }
         }
