@@ -12,7 +12,10 @@
         public static FightEnum _defaultFight = FightEnum.None;
 
         // PVP對手經驗值增量
-        public static int _expPVP = 100;
+        public static int _pvpEXP = 100;
+
+        // PVP對手暱稱
+        public static string _pvpNickName;
 
         // 遊戲檢查額外冷卻時間浮動上限 (預設:100秒)
         public static int _randTime = 100;

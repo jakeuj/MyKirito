@@ -133,12 +133,18 @@ namespace MyKirito
         {
             Console.WriteLine($"GetUserList {exp}");
             var isDone = false;
-            var request = new HttpRequestMessage(HttpMethod.Get, $"user-list?exp={exp}");
-            //var client = _clientFactory.CreateClient("kiritoAPI");
-            // 送出行動請求
-            var response = await _clientkiritoAPI.SendAsync(request);
-
-
+            HttpRequestMessage request;
+            HttpResponseMessage response;
+            if(string.IsNullOrWhiteSpace(AppSettings._pvpNickName))
+            {
+                request = new HttpRequestMessage(HttpMethod.Get, $"user-list?exp={exp}");
+                response = await _clientkiritoAPI.SendAsync(request);
+            }
+            else
+            {
+                request = new HttpRequestMessage(HttpMethod.Get, $"searchUserFn?nickname={AppSettings._pvpNickName}");
+                response = await _clientkiritoInfo.SendAsync(request);
+            }
             // 結果
             if (response.IsSuccessStatusCode)
             {
@@ -167,7 +173,6 @@ namespace MyKirito
                         else
                         {
                             var uid = gradeElement.GetString();
-
                             var lv = lvElement.GetInt32();
                             var State = await Challenge(uid, lv);
                             isDone = State == HttpStatusCode.OK;

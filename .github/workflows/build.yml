@@ -36,10 +36,11 @@ jobs:
           - Require
           [.NET Core Runtime 3.1](https://dotnet.microsoft.com/download/dotnet-core/3.1)
           - Use
-          dotnet MyKirito.dll {Token} {重生等級} {行為} {角色} {PVP}  {CD} {安靜}
+          dotnet MyKirito.dll {Token} {重生等級} {行為} {角色} {PVP}  {CD} {安靜} {PVP經驗條件} {PVP對手暱稱}
           EX：十五歲時自殺，重生到異世界發現自己是尤吉歐，
-          每天汁不同的妹，沒事就找人打架鬧事，沒事休息一兩百秒，安靜！
-          `dotnet MyKirito.dll ABC123.456 15 Eat Eugeo Hard 100 1`
+          每天汁不同的妹，沒事就找人打架鬧事，走一步要休息一兩百秒
+          不要問我問題，本來要找比我多500經驗的老手打架，但後來專挑UGO這個人打
+          `dotnet MyKirito.dll ABC123.456 15 Eat Eugeo Hard 100 1 500 UGO`
         draft: false
         prerelease: false
     - name: Upload Release Asset
