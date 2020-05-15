@@ -135,58 +135,98 @@ namespace MyKirito
             var isDone = false;
             HttpRequestMessage request;
             HttpResponseMessage response;
-            if(string.IsNullOrWhiteSpace(AppSettings._pvpNickName))
-            {
-                request = new HttpRequestMessage(HttpMethod.Get, $"user-list?exp={exp}");
-                response = await _clientkiritoAPI.SendAsync(request);
-            }
-            else
+            if(!string.IsNullOrWhiteSpace(AppSettings._pvpNickName))
             {
                 request = new HttpRequestMessage(HttpMethod.Get, $"searchUserFn?nickname={AppSettings._pvpNickName}");
                 response = await _clientkiritoInfo.SendAsync(request);
-            }
-            // 結果
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadAsStringAsync();
-                using (var document = JsonDocument.Parse(result))
+                // 結果
+                if (response.IsSuccessStatusCode)
                 {
-                    var root = document.RootElement;
-                    var studentsElement = root.GetProperty("userList");
-                    foreach (var student in studentsElement.EnumerateArray())
-                        if (!student.TryGetProperty("uid", out var gradeElement))
-                        {
-                            Console.WriteLine($"目標uid錯誤 {gradeElement}");
-                        }
-                        else if (!student.TryGetProperty("lv", out var lvElement))
-                        {
-                            Console.WriteLine($"目標lv錯誤 {lvElement}");
-                        }
-                        else if (!student.TryGetProperty("color", out var colorElement))
-                        {
-                            Console.WriteLine($"目標color錯誤 {colorElement}");
-                        }
-                        else if (colorElement.GetString() == "grey")
-                        {
-                            Console.WriteLine("目標已死亡");
-                        }
-                        else
-                        {
-                            var uid = gradeElement.GetString();
-                            var lv = lvElement.GetInt32();
-                            var State = await Challenge(uid, lv);
-                            isDone = State == HttpStatusCode.OK;
-                            if (State == HttpStatusCode.OK || State == HttpStatusCode.BadRequest)
-                                break;
-                            await Task.Delay(2 * 1000);
-                        }
+                    var result = await response.Content.ReadAsStringAsync();
+                    using (var document = JsonDocument.Parse(result))
+                    {
+                        var root = document.RootElement;
+                        var studentsElement = root.GetProperty("userList");
+                        foreach (var student in studentsElement.EnumerateArray())
+                            if (!student.TryGetProperty("uid", out var gradeElement))
+                            {
+                                Console.WriteLine($"目標uid錯誤 {gradeElement}");
+                            }
+                            else if (!student.TryGetProperty("lv", out var lvElement))
+                            {
+                                Console.WriteLine($"目標lv錯誤 {lvElement}");
+                            }
+                            else if (!student.TryGetProperty("color", out var colorElement))
+                            {
+                                Console.WriteLine($"目標color錯誤 {colorElement}");
+                            }
+                            else if (colorElement.GetString() == "grey")
+                            {
+                                Console.WriteLine("目標已死亡");
+                            }
+                            else
+                            {
+                                var uid = gradeElement.GetString();
+                                var lv = lvElement.GetInt32();
+                                var State = await Challenge(uid, lv);
+                                isDone = State == HttpStatusCode.OK;
+                                if (State == HttpStatusCode.OK || State == HttpStatusCode.BadRequest)
+                                    break;
+                                await Task.Delay(2 * 1000);
+                            }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"GetUserList {response.StatusCode}");
                 }
             }
-            else
+            if(!isDone)
             {
-                Console.WriteLine($"GetUserList {response.StatusCode}");
+                request = new HttpRequestMessage(HttpMethod.Get, $"user-list?exp={exp}");
+                response = await _clientkiritoAPI.SendAsync(request);
+                // 結果
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadAsStringAsync();
+                    using (var document = JsonDocument.Parse(result))
+                    {
+                        var root = document.RootElement;
+                        var studentsElement = root.GetProperty("userList");
+                        foreach (var student in studentsElement.EnumerateArray())
+                            if (!student.TryGetProperty("uid", out var gradeElement))
+                            {
+                                Console.WriteLine($"目標uid錯誤 {gradeElement}");
+                            }
+                            else if (!student.TryGetProperty("lv", out var lvElement))
+                            {
+                                Console.WriteLine($"目標lv錯誤 {lvElement}");
+                            }
+                            else if (!student.TryGetProperty("color", out var colorElement))
+                            {
+                                Console.WriteLine($"目標color錯誤 {colorElement}");
+                            }
+                            else if (colorElement.GetString() == "grey")
+                            {
+                                Console.WriteLine("目標已死亡");
+                            }
+                            else
+                            {
+                                var uid = gradeElement.GetString();
+                                var lv = lvElement.GetInt32();
+                                var State = await Challenge(uid, lv);
+                                isDone = State == HttpStatusCode.OK;
+                                if (State == HttpStatusCode.OK || State == HttpStatusCode.BadRequest)
+                                    break;
+                                await Task.Delay(2 * 1000);
+                            }
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"GetUserList {response.StatusCode}");
+                }
             }
-
             return isDone;
         }
 
