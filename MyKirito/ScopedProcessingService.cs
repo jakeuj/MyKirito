@@ -65,7 +65,7 @@ namespace MyKirito
                             // PVP 
                             if (AppSettings._defaultFight != FightEnum.None && DateTime.Now > _nextPvpTime)
                                 if (await _myService.GetUserList(myKirito.Lv + AppSettings._pvpEXP))
-                                    _nextPvpTime = _nextPvpTime.AddSeconds(Const.PvpTime);
+                                    _nextPvpTime = DateTime.Now.AddSeconds(Const.PvpTime);
                     }
                 }
 
