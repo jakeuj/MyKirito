@@ -40,10 +40,9 @@ namespace MyKirito
                 await using var responseStream = await content.ReadAsStreamAsync();
                 await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
                 var output = await decompressed.ReadAsJsonAsync<GZipStream, MyKirito>();
-                Console.WriteLine(output.ToJsonString());
+                Console.WriteLine($"角色：{output.Nickname}, 等級{output.Lv}, 狀態" + (output.Dead ? "死亡" : "正常"));
                 return output;
             }
-
             await OnErrorOccur(response.StatusCode, content);
             return null;
         }
@@ -60,7 +59,7 @@ namespace MyKirito
                 await using var responseStream = await content.ReadAsStreamAsync();
                 await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
                 var output = await decompressed.ReadAsJsonAsync<GZipStream, ActionOutput>();
-                Console.WriteLine(output.ToJsonString());
+                Console.WriteLine(output.Message);
                 return output;
             }
 
@@ -99,32 +98,10 @@ namespace MyKirito
 
         public async Task<UserListDto> GetUserListByLevel(long level)
         {
-            var getRequestString = "user-list?page=2&exp" + level;
+            var getRequestString = "user-list?page=2&lv=" + level;
             Console.Write("取得 {0} 等級的對手清單資料 ", level);
             return await GetUserList(getRequestString);
-        }
-
-        public async Task<BattleLog> Challenge(UserList user)
-        {
-            var json = new ChallengeInput
-                {Lv = user.Lv, OpponentUid = user.Uid, Type = (int) AppSettings.DefaultFight, Shout = string.Empty};
-            HttpContent contentPost = new StringContent(json.ToJsonString(), Encoding.UTF8, "application/json");
-            var response = await Client.PostAsync("challenge", contentPost);
-            Console.WriteLine("嘗試與以下玩家進行 {0} {1}", AppSettings.DefaultFight.GetDescriptionText(), response.StatusCode);
-            Console.WriteLine(user.ToJsonString());
-            var content = response.Content;
-            if (response.IsSuccessStatusCode)
-            {
-                await using var responseStream = await content.ReadAsStreamAsync();
-                await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
-                var output = await decompressed.ReadAsJsonAsync<GZipStream, BattleLog>();
-                Console.WriteLine(output.ToJsonString());
-                return output;
-            }
-
-            await OnErrorOccur(response.StatusCode, content);
-            return null;
-        }
+        }        
 
         private async Task<UserListDto> GetUserList(string getRequestString)
         {
@@ -136,6 +113,27 @@ namespace MyKirito
                 await using var responseStream = await content.ReadAsStreamAsync();
                 await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
                 var output = await decompressed.ReadAsJsonAsync<GZipStream, UserListDto>();
+                Console.WriteLine($"成功取得 {output.UserList.Count} 筆對手資料");
+                return output;
+            }
+
+            await OnErrorOccur(response.StatusCode, content);
+            return null;
+        }
+
+        public async Task<BattleLog> Challenge(UserList user)
+        {
+            var json = new ChallengeInput
+            { Lv = user.Lv, OpponentUid = user.Uid, Type = (int)AppSettings.DefaultFight, Shout = string.Empty };
+            HttpContent contentPost = new StringContent(json.ToJsonString(), Encoding.UTF8, "application/json");
+            var response = await Client.PostAsync("challenge", contentPost);
+            Console.WriteLine($"嘗試與等級{user.Lv} 的玩家 {user.Nickname} 進行 {AppSettings.DefaultFight.GetDescriptionText()} {response.StatusCode}");
+            var content = response.Content;
+            if (response.IsSuccessStatusCode)
+            {
+                await using var responseStream = await content.ReadAsStreamAsync();
+                await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
+                var output = await decompressed.ReadAsJsonAsync<GZipStream, BattleLog>();
                 Console.WriteLine(output.ToJsonString());
                 return output;
             }
