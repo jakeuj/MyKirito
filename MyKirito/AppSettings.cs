@@ -18,13 +18,13 @@
         public static FightEnum DefaultFight = FightEnum.None;
 
         // PVP對手經驗值增量
-        public static int PvpExp = 1;
+        public static int PvpLevel = 1;
 
         // PVP對手暱稱
         public static string PvpNickName;
 
-        // 遊戲檢查額外冷卻時間浮動上限 (預設:100秒)
-        public static int RandTime = 100;
+        // 遊戲檢查額外冷卻時間浮動上限 (預設:10秒)
+        public static int RandTime = 10;
 
         // 預設角色
         public static CharEnum DefaultChar = CharEnum.Kirito;

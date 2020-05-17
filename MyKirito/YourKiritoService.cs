@@ -46,8 +46,8 @@ namespace MyKirito
 
             if (MyKiritoDto != null && battleLog == null)
             {
-                userList = await _myKiritoService.GetUserListByLevel(MyKiritoDto.Lv + AppSettings.PvpExp);
-                user = userList?.UserList.FirstOrDefault();
+                userList = await _myKiritoService.GetUserListByLevel(MyKiritoDto.Lv + AppSettings.PvpLevel);
+                user = userList?.UserList.Where(x=>x.Color!="grey").OrderByDescending(x=>x.Color).ThenByDescending(x=>x.Lv).FirstOrDefault();
                 if (user != null) battleLog = await _myKiritoService.Challenge(user);
             }
 
