@@ -12,7 +12,7 @@
         public static FightEnum _defaultFight = FightEnum.None;
 
         // PVP對手經驗值增量
-        public static int _pvpEXP = 100;
+        public static int _pvpEXP = 1;
 
         // PVP對手暱稱
         public static string _pvpNickName;

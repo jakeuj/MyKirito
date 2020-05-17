@@ -180,7 +180,7 @@ namespace MyKirito
             }
             if(!isDone)
             {
-                request = new HttpRequestMessage(HttpMethod.Get, $"user-list?exp={exp}");
+                request = new HttpRequestMessage(HttpMethod.Get, $"user-list?lv={exp}&page=1");
                 response = await _clientkiritoAPI.SendAsync(request);
                 // 結果
                 if (response.IsSuccessStatusCode)

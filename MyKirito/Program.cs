@@ -38,7 +38,7 @@ namespace MyKirito
             // 接收安靜模式參數
             if (args.Length > 6 && int.TryParse(args[6], out var isSilence) && isSilence > 0)
                 _isAsk = false;
-            // 接收PVP對手經驗值增量參數
+            // 接收PVP對手等級值增量參數
             if (args.Length > 7 && int.TryParse(args[7], out var newExpPVP))
                 AppSettings._pvpEXP = newExpPVP;
             // 接收PVP對手暱稱參數
@@ -143,11 +143,11 @@ namespace MyKirito
             Console.WriteLine($"冷卻時間設定介於 {Const.CheckTime} 秒 ~ {Const.CheckTime + AppSettings._randTime} 秒");
 
             // 更新PVP對手經驗值增量
-            Console.WriteLine($"[選填] 設定PVP對手經驗值增量(預設：{AppSettings._pvpEXP})");
+            Console.WriteLine($"[選填] 設定PVP對手等級增量(預設：{AppSettings._pvpEXP})");
             newInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(newInput) && int.TryParse(newInput, out var newExpPVP))
                 AppSettings._pvpEXP = newExpPVP;
-            Console.WriteLine($"PVP目前會找高於自身經驗值 {AppSettings._pvpEXP} 的對手");
+            Console.WriteLine($"PVP目前會找高於自身等級 {AppSettings._pvpEXP} 的對手");
 
             // 更新PVP對手暱稱
             Console.WriteLine($"[選填] 設定PVP對手暱稱(預設：{AppSettings._pvpNickName})");
