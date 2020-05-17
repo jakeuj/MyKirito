@@ -30,14 +30,11 @@ namespace MyKirito
         private readonly IHttpClientFactory _clientFactory;
         private readonly HttpClient _clientkiritoAPI;
 
-        private readonly HttpClient _clientkiritoInfo;
-
         // DI注入
         public MyService(IHttpClientFactory clientFactory)
         {
             _clientFactory = clientFactory;
             _clientkiritoAPI = _clientFactory.CreateClient("kiritoAPI");
-            _clientkiritoInfo = _clientFactory.CreateClient("kiritoInfo");
         }
 
         /// <summary>
@@ -108,9 +105,9 @@ namespace MyKirito
         public async Task<MyKiritoDto> GetMyKiritoFn()
         {
             Console.WriteLine("GetMyKiritoFn  Result: ");
-            var request = new HttpRequestMessage(HttpMethod.Get, "getMyKiritoFn");
+            var request = new HttpRequestMessage(HttpMethod.Get, "my-kirito");
             //var client = _clientFactory.CreateClient("kiritoInfo");
-            var response = await _clientkiritoInfo.SendAsync(request);
+            var response = await _clientkiritoAPI.SendAsync(request);
             // 不成功則空
             if (!response.IsSuccessStatusCode)
             {
@@ -137,8 +134,8 @@ namespace MyKirito
             HttpResponseMessage response;
             if(!string.IsNullOrWhiteSpace(AppSettings._pvpNickName))
             {
-                request = new HttpRequestMessage(HttpMethod.Get, $"searchUserFn?nickname={AppSettings._pvpNickName}");
-                response = await _clientkiritoInfo.SendAsync(request);
+                request = new HttpRequestMessage(HttpMethod.Get, $"search?nickname={AppSettings._pvpNickName}");
+                response = await _clientkiritoAPI.SendAsync(request);
                 // 結果
                 if (response.IsSuccessStatusCode)
                 {

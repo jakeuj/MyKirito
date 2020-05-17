@@ -67,12 +67,6 @@ namespace MyKirito
                         c.BaseAddress = new Uri("https://mykirito.com/api/");
                         c.DefaultRequestHeaders.Add("token", _token);
                     });
-                    // 遊戲公開資訊端點
-                    services.AddHttpClient("kiritoInfo", c =>
-                    {
-                        c.BaseAddress = new Uri("https://us-central1-kirito-1585904519813.cloudfunctions.net/");
-                        c.DefaultRequestHeaders.Add("token", _token);
-                    });
                     // 註冊遊戲服務
                     services.AddTransient<IMyService, MyService>();
                     // 註冊排程服務
