@@ -59,6 +59,13 @@ namespace MyKirito
                 var result = await response.Content.ReadAsStringAsync();
                 Console.WriteLine(result);
             }
+            else if (response.StatusCode == HttpStatusCode.Forbidden)
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(result);
+                Console.WriteLine("手動驗證或換IP後按任意鍵繼續");
+                Console.ReadKey();
+            }
             else
             {
                 Console.WriteLine($"ReIncarnation {response.StatusCode}");
@@ -90,6 +97,13 @@ namespace MyKirito
                 var result = await response.Content.ReadAsStringAsync();
                 Console.WriteLine(result);
             }
+            else if (response.StatusCode == HttpStatusCode.Forbidden) 
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                Console.WriteLine(result);
+                Console.WriteLine("手動驗證或換IP後按任意鍵繼續");
+                Console.ReadKey();
+            }
             else
             {
                 Console.WriteLine($"DoAction {response.StatusCode}");
@@ -111,6 +125,12 @@ namespace MyKirito
             // 不成功則空
             if (!response.IsSuccessStatusCode)
             {
+                if (response.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    Console.WriteLine(await response.Content.ReadAsStringAsync());
+                    Console.WriteLine("手動驗證或換IP後按任意鍵繼續");
+                    Console.ReadKey();
+                }
                 Console.WriteLine($"GetMyKiritoFn {response.StatusCode}");
                 return null;
             }
@@ -219,6 +239,12 @@ namespace MyKirito
                             }
                     }
                 }
+                else if (response.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    Console.WriteLine(await response.Content.ReadAsStringAsync());
+                    Console.WriteLine("手動驗證或換IP後按任意鍵繼續");
+                    Console.ReadKey();
+                }
                 else
                 {
                     Console.WriteLine($"GetUserList {response.StatusCode}");
@@ -245,6 +271,12 @@ namespace MyKirito
             {
                 var result = await response.Content.ReadAsStringAsync();
                 Console.WriteLine($"GetUserList {result}");
+            }
+            else if (response.StatusCode == HttpStatusCode.Forbidden)
+            {
+                Console.WriteLine(await response.Content.ReadAsStringAsync());
+                Console.WriteLine("手動驗證或換IP後按任意鍵繼續");
+                Console.ReadKey();
             }
             else
             {
