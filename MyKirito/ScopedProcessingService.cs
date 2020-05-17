@@ -15,7 +15,7 @@ namespace MyKirito
     internal class ScopedProcessingService : IScopedProcessingService
     {
         //總獲得屬性點
-        private static int _totalPoints;
+        private static long _totalPoints;
 
         // 亂數產生器
         private static readonly Random RandomCd = new Random();
@@ -23,16 +23,16 @@ namespace MyKirito
         private readonly ILogger _logger;
 
         // 排程主要使用遊戲主服務
-        private readonly IMyService _myService;
+        private readonly IYourKiritoService _yourService;
         private int _executionCount;
 
         // Pvp計時器
         private DateTime _nextPvpTime = DateTime.Now.AddSeconds(Const.PvpTime);
 
-        public ScopedProcessingService(ILogger<ScopedProcessingService> logger, IMyService myService)
+        public ScopedProcessingService(ILogger<ScopedProcessingService> logger, IYourKiritoService yourService)
         {
             _logger = logger;
-            _myService = myService;
+            _yourService = yourService;
         }
 
         // 執行工作
@@ -44,35 +44,33 @@ namespace MyKirito
 
                 _logger.LogInformation(
                     "Scoped Processing Service is working. Count: {Count}", _executionCount);
+
                 // 取得角色資料
-                var myKirito = await _myService.GetMyKiritoFn();
-                if (myKirito != null)
+                if (await _yourService.GetMyKirito())
                 {
                     // 轉生限制條件：滿十等或死亡
-                    if (myKirito.Dead || AppSettings._defaultReIncarnationLevel > 0 &&
-                        myKirito.Lv >= AppSettings._defaultReIncarnationLevel)
+                    if (_yourService.MyKiritoDto.Dead || AppSettings.DefaultReIncarnationLevel > 0 &&
+                        _yourService.MyKiritoDto.Lv >= AppSettings.DefaultReIncarnationLevel)
                     {
                         // 計算轉生屬性點數
-                        var freePoints = CheckPoint(myKirito.Lv);
+                        var freePoints = CheckPoint(_yourService.MyKiritoDto.Lv);
                         // 開始轉生
-                        if (await _myService.ReIncarnation(freePoints))
+                        if (await _yourService.ReIncarnation(freePoints))
                             _totalPoints += freePoints;
                     }
-                    else
-                    {
-                        // 日常動作：汁妹之類的
-                        if (await _myService.DoAction(AppSettings._defaultAct))
-                            // PVP 
-                            if (AppSettings._defaultFight != FightEnum.None && DateTime.Now > _nextPvpTime)
-                                if (await _myService.GetUserList(myKirito.Lv + AppSettings._pvpEXP))
-                                    _nextPvpTime = DateTime.Now.AddSeconds(Const.PvpTime);
-                    }
+
+                    // 日常動作：汁妹之類的
+                    if (await _yourService.DoAction(AppSettings.DefaultAct))
+                        // PVP 
+                        if (AppSettings.DefaultFight != FightEnum.None && DateTime.Now > _nextPvpTime)
+                            if (await _yourService.GetUserListThenChallenge())
+                                _nextPvpTime = DateTime.Now.AddSeconds(Const.PvpTime);
                 }
 
                 // 定時執行
                 int addTime;
-                if (AppSettings._randTime > 0)
-                    addTime = Const.CheckTime + RandomCd.Next(1, AppSettings._randTime);
+                if (AppSettings.RandTime > 0)
+                    addTime = Const.CheckTime + RandomCd.Next(1, AppSettings.RandTime);
                 else
                     addTime = Const.CheckTime;
                 Console.WriteLine($"屬性小計：{_totalPoints}, 下次戰鬥： {_nextPvpTime}, 等待 {addTime} 秒...");
@@ -81,7 +79,7 @@ namespace MyKirito
         }
 
         //檢查獲得屬性點數
-        private static int CheckPoint(int input)
+        private static long CheckPoint(long input)
         {
             //超過最大等級時：超過幾級就拿幾點 + 所有獎勵等級各拿一點(有幾個限制就拿幾點)
             if (input > AppSettings.AddPointLevel.Max())

@@ -1,14 +1,16 @@
-﻿namespace MyKirito
+﻿using System.ComponentModel;
+
+namespace MyKirito
 {
     // 行動列舉值
     public enum ActionEnum
     {
-        Sit,
-        Good,
-        Train,
-        Eat,
-        Girl,
-        Hunt
+        [Description("坐下休息")] Sit,
+        [Description("做善事")] Good,
+        [Description("自主訓練")] Train,
+        [Description("外出野餐")] Eat,
+        [Description("汁妹")] Girl,
+        [Description("狩獵兔肉")] Hunt
     }
 
     public enum CharEnum
@@ -30,7 +32,6 @@
         Hinamori,
         Aizen,
         Asuna,
-        kibaou,
         Hina,
         Agil,
         Rabbit,
@@ -41,10 +42,10 @@
     // 戰鬥列舉值
     public enum FightEnum
     {
-        None = -1,
-        Friend,
-        Hard,
-        Duo,
-        Kill
+        [Description("深蹲中...")] None = -1,
+        [Description("友好切磋")] Friend,
+        [Description("認真對決")] Hard,
+        [Description("決一死戰")] Duo,
+        [Description("我要殺死你")] Kill
     }
 }

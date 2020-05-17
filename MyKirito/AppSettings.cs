@@ -2,28 +2,34 @@
 {
     public class AppSettings
     {
+        // 詢問設定開關
+        public static bool IsAsk = true;
+
+        // Token
+        public static string Token = string.Empty;
+
         // 額外屬性等級闕值
         public static readonly int[] AddPointLevel = {15, 20, 23, 25};
 
         // 預設動作
-        public static ActionEnum _defaultAct = ActionEnum.Girl;
+        public static ActionEnum DefaultAct = ActionEnum.Girl;
 
         // 預設Pvp
-        public static FightEnum _defaultFight = FightEnum.None;
+        public static FightEnum DefaultFight = FightEnum.None;
 
         // PVP對手經驗值增量
-        public static int _pvpEXP = 1;
+        public static int PvpExp = 1;
 
         // PVP對手暱稱
-        public static string _pvpNickName;
+        public static string PvpNickName;
 
         // 遊戲檢查額外冷卻時間浮動上限 (預設:100秒)
-        public static int _randTime = 100;
+        public static int RandTime = 100;
 
         // 預設角色
-        public static CharEnum _defaultChar = CharEnum.Kirito;
+        public static CharEnum DefaultChar = CharEnum.Kirito;
 
         //自動投胎等級 (0為不自動投胎，預設:0級)
-        public static int _defaultReIncarnationLevel;
+        public static int DefaultReIncarnationLevel;
     }
 }
