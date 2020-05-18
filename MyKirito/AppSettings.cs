@@ -6,7 +6,7 @@
         public static bool IsAsk = true;
 
         // Token
-        public static string Token = string.Empty;
+        public static string Token = "";
 
         // 額外屬性等級闕值
         public static readonly int[] AddPointLevel = {15, 20, 23, 25};

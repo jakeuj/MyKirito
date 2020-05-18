@@ -14,14 +14,12 @@ namespace MyKirito
             client.BaseAddress = new Uri("https://mykirito.com/api/");
             client.DefaultRequestHeaders.Add("Accept",
                 "application/json, text/plain, */*");
-            client.DefaultRequestHeaders.Add("accept-encoding",
-                "gzip, deflate, br");
+            //client.DefaultRequestHeaders.Add("accept-encoding",
+            //    "gzip, deflate, br");
             client.DefaultRequestHeaders.Add("accept-language",
                 "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-CN;q=0.6");
             client.DefaultRequestHeaders.Add("origin",
                 "https://mykirito.com");
-            client.DefaultRequestHeaders.Add("referer",
-                "https://mykirito.com/profile/5ec11b1b9f41ff000a809835");
             client.DefaultRequestHeaders.Add("User-Agent",
                 "ozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36");
             client.DefaultRequestHeaders.Add("token", AppSettings.Token);
@@ -37,9 +35,10 @@ namespace MyKirito
             var content = response.Content;
             if (response.IsSuccessStatusCode)
             {
-                await using var responseStream = await content.ReadAsStreamAsync();
-                await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
-                var output = await decompressed.ReadAsJsonAsync<GZipStream, MyKirito>();
+                //await using var responseStream = await content.ReadAsStreamAsync();
+                //await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
+                //var output = await decompressed.ReadAsJsonAsync<GZipStream, MyKirito>();
+                var output = await content.ReadAsJsonAsync<MyKirito>();
                 Console.WriteLine($"角色：{output.Nickname}, 等級{output.Lv}, 狀態" + (output.Dead ? "死亡" : "正常"));
                 return output;
             }
@@ -56,9 +55,10 @@ namespace MyKirito
             var content = response.Content;
             if (response.IsSuccessStatusCode)
             {
-                await using var responseStream = await content.ReadAsStreamAsync();
-                await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
-                var output = await decompressed.ReadAsJsonAsync<GZipStream, ActionOutput>();
+                //await using var responseStream = await content.ReadAsStreamAsync();
+                //await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
+                //var output = await decompressed.ReadAsJsonAsync<GZipStream, ActionOutput>();
+                var output = await content.ReadAsJsonAsync<ActionOutput>();
                 Console.WriteLine(output.Message);
                 return output;
             }
@@ -110,9 +110,10 @@ namespace MyKirito
             var content = response.Content;
             if (response.IsSuccessStatusCode)
             {
-                await using var responseStream = await content.ReadAsStreamAsync();
-                await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
-                var output = await decompressed.ReadAsJsonAsync<GZipStream, UserListDto>();
+                //await using var responseStream = await content.ReadAsStreamAsync();
+                //await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
+                //var output = await decompressed.ReadAsJsonAsync<GZipStream, UserListDto>();
+                var output = await content.ReadAsJsonAsync<UserListDto>();
                 Console.WriteLine($"成功取得 {output.UserList.Count} 筆對手資料");
                 return output;
             }
@@ -131,9 +132,10 @@ namespace MyKirito
             var content = response.Content;
             if (response.IsSuccessStatusCode)
             {
-                await using var responseStream = await content.ReadAsStreamAsync();
-                await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
-                var output = await decompressed.ReadAsJsonAsync<GZipStream, BattleLog>();
+                //await using var responseStream = await content.ReadAsStreamAsync();
+                //await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
+                //var output = await decompressed.ReadAsJsonAsync<GZipStream, BattleLog>();
+                var output = await content.ReadAsJsonAsync<BattleLog>();
                 Console.WriteLine(output.Messages.ToJsonString());
                 Console.WriteLine($"與 [{user.Lv}] {user.Nickname} 戰鬥 {output.Result} 獲得 {output.Gained.Exp} 經驗");
                 return output;
@@ -150,10 +152,10 @@ namespace MyKirito
                 // 需驗證
                 try
                 {
-                    await using var responseStream = await content.ReadAsStreamAsync();
-                    await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
-                    var output = await decompressed.ReadAsJsonAsync<GZipStream, ErrorOutput>();
-                    //var output = await input.ReadAsJsonAsync<ErrorOutput>();
+                    //await using var responseStream = await content.ReadAsStreamAsync();
+                    //await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
+                    //var output = await decompressed.ReadAsJsonAsync<GZipStream, ErrorOutput>();
+                    var output = await content.ReadAsJsonAsync<ErrorOutput>();
                     Console.WriteLine(output.ToJsonString());
                     Console.WriteLine($"驗證後按任意鍵繼續[{AppSettings.MyKiritoDto.Nickname}][{AppSettings.DefaultAct.GetDescriptionText()}] {message}");
                 }
