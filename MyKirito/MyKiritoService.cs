@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO.Compression;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -136,7 +137,8 @@ namespace MyKirito
                 //await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
                 //var output = await decompressed.ReadAsJsonAsync<GZipStream, BattleLog>();
                 var output = await content.ReadAsJsonAsync<BattleLog>();
-                Console.WriteLine(output.Messages.ToJsonString());
+                output.Messages.Select(x => x.M).ToList().ForEach(Console.WriteLine);
+                //Console.WriteLine(output.Messages.ToJsonString());
                 Console.WriteLine($"與 [{user.Lv}] {user.Nickname} 戰鬥 {output.Result} 獲得 {output.Gained.Exp} 經驗");
                 return output;
             }
