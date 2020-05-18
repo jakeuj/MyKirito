@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -9,6 +11,7 @@ namespace MyKirito
     {
         private static async Task<int> Main(string[] args)
         {
+            Console.OutputEncoding = Encoding.UTF8;
             Init.Initialization(args);
             return await Main1(args);
         }
