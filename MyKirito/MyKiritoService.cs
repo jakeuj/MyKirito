@@ -155,7 +155,7 @@ namespace MyKirito
                     var output = await decompressed.ReadAsJsonAsync<GZipStream, ErrorOutput>();
                     //var output = await input.ReadAsJsonAsync<ErrorOutput>();
                     Console.WriteLine(output.ToJsonString());
-                    Console.WriteLine($"驗證後按任意鍵繼續{AppSettings.DefaultAct}");
+                    Console.WriteLine($"驗證後按任意鍵繼續({AppSettings.DefaultAct.GetDescriptionText()})");
                 }
                 catch
                 {
