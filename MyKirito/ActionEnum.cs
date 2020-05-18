@@ -10,7 +10,8 @@ namespace MyKirito
         [Description("自主訓練")] Train,
         [Description("外出野餐")] Eat,
         [Description("汁妹")] Girl,
-        [Description("狩獵兔肉")] Hunt
+        [Description("狩獵兔肉")] Hunt,
+        [Description("釣魚")] Fish
     }
 
     public enum CharEnum

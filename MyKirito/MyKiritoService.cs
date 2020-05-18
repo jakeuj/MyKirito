@@ -127,7 +127,7 @@ namespace MyKirito
             { Lv = user.Lv, OpponentUid = user.Uid, Type = (int)AppSettings.DefaultFight, Shout = string.Empty };
             HttpContent contentPost = new StringContent(json.ToJsonString(), Encoding.UTF8, "application/json");
             var response = await Client.PostAsync("challenge", contentPost);
-            Console.WriteLine($"嘗試與等級{user.Lv} 的玩家 {user.Nickname} 進行 {AppSettings.DefaultFight.GetDescriptionText()} {response.StatusCode}");
+            Console.WriteLine($"嘗試與等級 {user.Lv} 的玩家 {user.Nickname} 進行 {AppSettings.DefaultFight.GetDescriptionText()} {response.StatusCode}");
             var content = response.Content;
             if (response.IsSuccessStatusCode)
             {
@@ -135,7 +135,7 @@ namespace MyKirito
                 await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
                 var output = await decompressed.ReadAsJsonAsync<GZipStream, BattleLog>();
                 Console.WriteLine(output.Messages.ToJsonString());
-                Console.WriteLine(output.Result);
+                Console.WriteLine($"與 [{user.Lv}] {user.Nickname} 戰鬥 {output.Result} 獲得 {output.Gained.Exp} 經驗");
                 return output;
             }
 
@@ -163,7 +163,6 @@ namespace MyKirito
                     Console.WriteLine(output);
                     Console.WriteLine("換IP後按任意鍵繼續");
                 }
-
                 Console.ReadKey();
             }
             else if (statusCode == HttpStatusCode.BadRequest)
@@ -190,6 +189,7 @@ namespace MyKirito
                 }
                 catch (Exception e)
                 {
+                    Console.WriteLine("未知錯誤");
                     Console.WriteLine(e);
                 }
             }

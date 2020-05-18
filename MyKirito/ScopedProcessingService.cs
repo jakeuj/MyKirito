@@ -73,7 +73,9 @@ namespace MyKirito
                     addTime = Const.CheckTime + RandomCd.Next(1, AppSettings.RandTime);
                 else
                     addTime = Const.CheckTime;
-                Console.WriteLine($"[{_yourService.MyKiritoDto.Lv}] {_yourService.MyKiritoDto.Nickname}, 獲得 {_totalPoints} 屬性, 下次戰鬥： {_nextPvpTime}, 等待 {addTime} 秒...");
+                if (_yourService.MyKiritoDto != null)
+                    Console.Write($"[{_yourService.MyKiritoDto.Lv}] {_yourService.MyKiritoDto.Nickname}, ");
+                Console.WriteLine($"獲得 {_totalPoints} 屬性, 下次戰鬥： {_nextPvpTime}, 等待 {addTime} 秒...");
                 await Task.Delay(addTime * 1000, stoppingToken);
             }
         }
