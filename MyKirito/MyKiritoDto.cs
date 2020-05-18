@@ -212,4 +212,60 @@ namespace MyKirito
 
         public string S { get; set; }
     }
+
+
+    public class ProfileDto
+    {
+        public Profile profile { get; set; }
+    }
+
+    public class Profile
+    {
+        public string _id { get; set; }
+        public int actionCount { get; set; }
+        public int agi { get; set; }
+        public int atk { get; set; }
+        public int challengeCount { get; set; }
+        public string color { get; set; }
+        public bool dead { get; set; }
+        public int def { get; set; }
+        public int defDeath { get; set; }
+        public int defKill { get; set; }
+        public int floor { get; set; }
+        public int hp { get; set; }
+        public int _int { get; set; }
+        public int kill { get; set; }
+        public long lastChallenge { get; set; }
+        public long lastStatus { get; set; }
+        public int lck { get; set; }
+        public int lose { get; set; }
+        public int lv { get; set; }
+        public string nickname { get; set; }
+        public Rattrs rattrs { get; set; }
+        public int reincarnation { get; set; }
+        public int reset { get; set; }
+        public int resurrect { get; set; }
+        public int spd { get; set; }
+        public string status { get; set; }
+        public int stm { get; set; }
+        public int tec { get; set; }
+        public string title { get; set; }
+        public int totalDeath { get; set; }
+        public int totalDefKill { get; set; }
+        public int totalKill { get; set; }
+        public int totalLose { get; set; }
+        public int totalWin { get; set; }
+        public Unlockedcharacter[] unlockedCharacters { get; set; }
+        public int win { get; set; }
+        public string character { get; set; }
+        public string avatar { get; set; }
+    }    
+
+    public class Unlockedcharacter
+    {
+        public string character { get; set; }
+        public string name { get; set; }
+        public string avatar { get; set; }
+    }
+
 }

@@ -1,4 +1,6 @@
-﻿namespace MyKirito
+﻿using System;
+
+namespace MyKirito
 {
     public class AppSettings
     {
@@ -23,6 +25,9 @@
         // PVP對手暱稱
         public static string PvpNickName;
 
+        // PVP對手UID
+        public static string PvpUid;
+
         // 遊戲檢查額外冷卻時間浮動上限 (預設:10秒)
         public static int RandTime = 10;
 
@@ -33,5 +38,9 @@
         public static int DefaultReIncarnationLevel;
 
         public static MyKirito MyKiritoDto { get; set; } = null;
+
+        public static DateTime NextPvpTime = DateTime.Now.AddSeconds(Const.PvpTime);
+
+        public static DateTime NextActionTime = DateTime.Now;
     }
 }

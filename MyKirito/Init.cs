@@ -6,6 +6,15 @@ namespace MyKirito
     {
         public static void Initialization(string[] args)
         {
+            Console.WriteLine("======================================================================");
+            Console.WriteLine("[提示] 可以給參數執行");
+            Console.WriteLine("[格式] dotnet MyKirito.dll {參數}");
+            Console.WriteLine("[參數] Token 重生等級 行為 角色 PVP  CD 安靜 PVP等級 PVP暱稱 PVP識別碼");
+            Console.WriteLine("[範例] MyKirito.exe ABC123.456 15 Eat Eugeo Hard 100 1 5 桐人 a1b2c3d4");
+            Console.WriteLine("[結果1] PVP會先找a1b2c3d4使用者再找桐人最後找高於自身5級的人打");
+            Console.WriteLine("[結果2] 不會再詢問設定值，每100~200秒執行一次動作並且認真對戰");
+            Console.WriteLine("[結果3] 死亡會重生為尤吉歐並自動野餐，使用的使用者權杖為ABC123.456");
+            Console.WriteLine("======================================================================");
             // 接收Token參數
             if (args.Length > 0)
                 AppSettings.Token = args[0];
@@ -33,26 +42,51 @@ namespace MyKirito
             // 接收PVP對手暱稱參數
             if (args.Length > 8)
                 AppSettings.PvpNickName = args[8];
-            if (AppSettings.IsAsk)
-                Asker();
+            // 接收PVP對手Uid參數
+            if (args.Length > 9)
+                AppSettings.PvpUid = args[9];
+            Asker();
+            Console.WriteLine("======================================================================");
+            if (!AppSettings.IsAsk)
+                Console.WriteLine($"目前模式設定為安靜模式(不詢問設定值)");
+            else
+                Console.WriteLine($"目前模式設定為一般模式(會問設定值)");
+            Console.WriteLine("Token 目前設定為：");
+            Console.WriteLine(AppSettings.Token);
+            Console.WriteLine($"等擊達到 {AppSettings.DefaultReIncarnationLevel} 時自動重生");
+            Console.WriteLine($"日常行為模式 {AppSettings.DefaultAct}");
+            Console.WriteLine($"重生時將選擇角色 {AppSettings.DefaultChar}");
+            Console.WriteLine($"PVP戰鬥模式為 {AppSettings.DefaultFight}");
+            Console.WriteLine($"冷卻時間設定介於 {Const.CheckTime} 秒 ~ {Const.CheckTime + AppSettings.RandTime} 秒");
+            Console.WriteLine($"[一般]PVP目前會找高於自身等級 {AppSettings.PvpLevel} 的對手");
+            Console.WriteLine($"[其次]PVP目前會集中攻擊 {AppSettings.PvpLevel}");
+            Console.WriteLine($"[優先]PVP目前會集中攻擊 Uid= {AppSettings.PvpUid} 的玩家");
+            Console.WriteLine("======================================================================");
         }
 
         public static void Asker()
         {
-            // 更新授權Token
-            Console.WriteLine("[必要] 輸入 Token:");
             string newInput;
-            while (true)
+            if (string.IsNullOrWhiteSpace(AppSettings.Token) || AppSettings.IsAsk)
             {
-                newInput = Console.ReadLine();
-                if (!string.IsNullOrWhiteSpace(newInput)) AppSettings.Token = newInput;
-                if (!string.IsNullOrWhiteSpace(AppSettings.Token))
+                // 更新授權Token
+                Console.WriteLine("[必要] 輸入 Token:");                
+                while (true)
                 {
-                    Console.WriteLine($"Token 目前設定為 {AppSettings.Token}");
-                    break;
-                }
+                    newInput = Console.ReadLine();
+                    if (!string.IsNullOrWhiteSpace(newInput)) AppSettings.Token = newInput;
+                    if (!string.IsNullOrWhiteSpace(AppSettings.Token))
+                    {
+                        Console.WriteLine($"Token 目前設定為 {AppSettings.Token}");
+                        break;
+                    }
 
-                Console.WriteLine("[必要] 輸入 token:");
+                    Console.WriteLine("[必要] 輸入 token:");
+                }
+            }
+            if (!AppSettings.IsAsk)
+            {                
+                return;
             }
 
             // 更新預設角色
@@ -110,6 +144,13 @@ namespace MyKirito
             if (!string.IsNullOrWhiteSpace(newInput))
                 AppSettings.PvpNickName = newInput;
             Console.WriteLine($"PVP目前會集中攻擊 {AppSettings.PvpLevel}");
+
+            // 更新PVP對手Uid
+            Console.WriteLine($"[選填] 設定PVP對手暱稱(預設：{AppSettings.PvpUid})");
+            newInput = Console.ReadLine();
+            if (!string.IsNullOrWhiteSpace(newInput))
+                AppSettings.PvpUid = newInput;
+            Console.WriteLine($"PVP目前會集中攻擊 [Uid= {AppSettings.PvpLevel}] 的玩家");
         }
     }
 }

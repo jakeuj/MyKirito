@@ -26,7 +26,8 @@ namespace MyKirito
                         .AddFilter("Microsoft", LogLevel.Warning)
                         .AddFilter("System", LogLevel.Warning)
                         .AddFilter("MyKirito.Program", LogLevel.Warning)
-                        .AddConsole();
+                        //.AddConsole()
+                        ;
                 })
                 .ConfigureServices((hostContext, services) =>
                 {

@@ -29,10 +29,28 @@ namespace MyKirito
 
         public HttpClient Client { get; }
 
+        public async Task<ProfileDto> GetProfile(string uid)
+        {
+            var response = await Client.GetAsync("profile/"+uid);
+            Console.WriteLine($"取得 {uid} 資料 {response.StatusCode}");
+            var content = response.Content;
+            if (response.IsSuccessStatusCode)
+            {
+                //await using var responseStream = await content.ReadAsStreamAsync();
+                //await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
+                //var output = await decompressed.ReadAsJsonAsync<GZipStream, MyKirito>();
+                var output = await content.ReadAsJsonAsync<ProfileDto>();
+                Console.WriteLine($"角色：{output.profile.nickname}, 等級{output.profile.lv}, 狀態" + (output.profile.dead ? "死亡" : "正常"));
+                return output;
+            }
+            await OnErrorOccur(response.StatusCode, content, "GetProfile");
+            return null;
+        }
+
         public async Task<MyKirito> GetMyKirito()
         {
             var response = await Client.GetAsync("my-kirito");
-            Console.WriteLine("{0} {1}", "取得資料", response.StatusCode);
+            Console.WriteLine("{0} {1}", "取得自己資料", response.StatusCode);
             var content = response.Content;
             if (response.IsSuccessStatusCode)
             {
@@ -123,13 +141,13 @@ namespace MyKirito
             return null;
         }
 
-        public async Task<BattleLog> Challenge(UserList user)
+        public async Task<BattleLog> Challenge(long userLv, string userUid, string userNickName)
         {
             var json = new ChallengeInput
-            { Lv = user.Lv, OpponentUid = user.Uid, Type = (int)AppSettings.DefaultFight, Shout = string.Empty };
+            { Lv = userLv, OpponentUid = userUid, Type = (int)AppSettings.DefaultFight, Shout = string.Empty };
             HttpContent contentPost = new StringContent(json.ToJsonString(), Encoding.UTF8, "application/json");
             var response = await Client.PostAsync("challenge", contentPost);
-            Console.WriteLine($"嘗試與等級 {user.Lv} 的玩家 {user.Nickname} 進行 {AppSettings.DefaultFight.GetDescriptionText()} {response.StatusCode}");
+            Console.WriteLine($"嘗試與等級 {userLv} 的玩家 {userNickName} 進行 {AppSettings.DefaultFight.GetDescriptionText()} {response.StatusCode}");
             var content = response.Content;
             if (response.IsSuccessStatusCode)
             {
@@ -139,7 +157,7 @@ namespace MyKirito
                 var output = await content.ReadAsJsonAsync<BattleLog>();
                 output.Messages.Select(x => x.M).ToList().ForEach(Console.WriteLine);
                 //Console.WriteLine(output.Messages.ToJsonString());
-                Console.WriteLine($"與 [{user.Lv}] {user.Nickname} 戰鬥 {output.Result} 獲得 {output.Gained.Exp} 經驗");
+                Console.WriteLine($"與 [{userLv}] {userNickName} 戰鬥 {output.Result} 獲得 {output.Gained.Exp} 經驗");
                 return output;
             }
 
