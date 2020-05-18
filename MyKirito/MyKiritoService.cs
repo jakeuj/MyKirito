@@ -63,7 +63,7 @@ namespace MyKirito
                 return output;
             }
 
-            await OnErrorOccur(response.StatusCode, content, "DoAction");
+            await OnErrorOccur(response.StatusCode, content, "行動");
             return null;
         }
 
@@ -141,7 +141,7 @@ namespace MyKirito
                 return output;
             }
 
-            await OnErrorOccur(response.StatusCode, content, "Challenge");
+            await OnErrorOccur(response.StatusCode, content, "戰鬥");
             return null;
         }
 
@@ -149,6 +149,7 @@ namespace MyKirito
         {
             if (statusCode == HttpStatusCode.Forbidden)
             {
+                Console.ForegroundColor = ConsoleColor.Yellow;
                 // 需驗證
                 try
                 {
@@ -157,18 +158,22 @@ namespace MyKirito
                     //var output = await decompressed.ReadAsJsonAsync<GZipStream, ErrorOutput>();
                     var output = await content.ReadAsJsonAsync<ErrorOutput>();
                     Console.WriteLine(output.ToJsonString());
-                    Console.WriteLine($"驗證後按任意鍵繼續[{AppSettings.MyKiritoDto.Nickname}][{AppSettings.DefaultAct.GetDescriptionText()}] {message}");
+                    Console.ForegroundColor = ConsoleColor.Magenta;
+                    Console.WriteLine($"[{AppSettings.MyKiritoDto.Nickname}] 驗證 [{message}] 後 [{AppSettings.DefaultAct.GetDescriptionText()}] 按任意鍵繼續");                    
                 }
                 catch
                 {
                     var output = await content.ReadAsStringAsync();
                     Console.WriteLine(output);
+                    Console.ForegroundColor = ConsoleColor.Magenta;
                     Console.WriteLine("換IP後按任意鍵繼續");
                 }
+                Console.ResetColor();
                 Console.ReadKey();
             }
             else if (statusCode == HttpStatusCode.BadRequest)
             {
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 // 冷卻中or你的角色現在是死亡狀態
                 try
                 {
@@ -180,6 +185,7 @@ namespace MyKirito
                     var output = await content.ReadAsStringAsync();
                     Console.WriteLine(output);
                 }
+                Console.ResetColor();
             }
             else
             {

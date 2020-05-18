@@ -73,9 +73,11 @@ namespace MyKirito
                     addTime = Const.CheckTime + RandomCd.Next(1, AppSettings.RandTime);
                 else
                     addTime = Const.CheckTime;
+                Console.ForegroundColor = ConsoleColor.Green;
                 if (AppSettings.MyKiritoDto != null)
                     Console.Write($"[{AppSettings.MyKiritoDto.Lv}] {AppSettings.MyKiritoDto.Nickname}, ");
                 Console.WriteLine($"獲得 {_totalPoints} 屬性, 下次戰鬥： {_nextPvpTime}, 等待 {addTime} 秒...");
+                Console.ResetColor();
                 await Task.Delay(addTime * 1000, stoppingToken);
             }
         }
