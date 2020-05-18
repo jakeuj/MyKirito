@@ -85,11 +85,16 @@ namespace MyKirito
             if (!string.IsNullOrWhiteSpace(AppSettings.PvpUid))
             {
                 var uidUser = await _myKiritoService.GetProfile(AppSettings.PvpUid);
-                if(uidUser!=null && !uidUser.profile.dead)
-                    battleLog = await _myKiritoService.Challenge(uidUser.profile.lv, uidUser.profile._id, uidUser.profile.nickname);
+                if (uidUser != null && uidUser.profile != null)
+                {
+                    if (!uidUser.profile.dead)
+                        battleLog = await _myKiritoService.Challenge(uidUser.profile.lv, uidUser.profile._id, uidUser.profile.nickname);
+                    if (!string.IsNullOrWhiteSpace(AppSettings.PvpNickName) && uidUser.profile.nickname == AppSettings.PvpNickName)
+                        AppSettings.PvpNickName = string.Empty;
+                }                
             }
             if (!string.IsNullOrWhiteSpace(AppSettings.PvpNickName) && battleLog == null)
-            {
+            {                
                 userList = await _myKiritoService.GetUserByName(AppSettings.PvpNickName);
                 user = userList?.UserList.FirstOrDefault();
                 if (user != null) battleLog = await _myKiritoService.Challenge(user.Lv,user.Uid,user.Nickname);
@@ -100,7 +105,6 @@ namespace MyKirito
                 user = userList?.UserList.Where(x=>x.Color!="grey").OrderByDescending(x=>x.Color).ThenByDescending(x=>x.Lv).FirstOrDefault();
                 if (user != null) battleLog = await _myKiritoService.Challenge(user.Lv, user.Uid, user.Nickname);
             }
-
             return battleLog != null;
         }
 

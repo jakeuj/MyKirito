@@ -14,6 +14,7 @@ namespace MyKirito
             Console.WriteLine("[結果1] PVP會先找a1b2c3d4使用者再找桐人最後找高於自身5級的人打");
             Console.WriteLine("[結果2] 不會再詢問設定值，每100~200秒執行一次動作並且認真對戰");
             Console.WriteLine("[結果3] 死亡會重生為尤吉歐並自動野餐，使用的使用者權杖為ABC123.456");
+            Console.WriteLine("[建議] PVP如要針對，最好用識別碼 A 0 Eat Eugeo Hard 0 1 5 \"\" a1b2c3d4");
             Console.WriteLine("======================================================================");
             // 接收Token參數
             if (args.Length > 0)
