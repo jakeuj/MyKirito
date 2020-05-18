@@ -12,12 +12,10 @@ namespace MyKirito
             _myKiritoService = myKiritoService;
         }
 
-        public MyKirito MyKiritoDto { get; private set; }
-
         public async Task<bool> GetMyKirito()
         {
-            MyKiritoDto = await _myKiritoService.GetMyKirito();
-            return MyKiritoDto != null;
+            AppSettings.MyKiritoDto = await _myKiritoService.GetMyKirito();
+            return AppSettings.MyKiritoDto != null;
         }
 
         public async Task<bool> DoAction(ActionEnum input)
@@ -44,9 +42,9 @@ namespace MyKirito
                 if (user != null) battleLog = await _myKiritoService.Challenge(user);
             }
 
-            if (MyKiritoDto != null && battleLog == null)
+            if (AppSettings.MyKiritoDto != null && battleLog == null)
             {
-                userList = await _myKiritoService.GetUserListByLevel(MyKiritoDto.Lv + AppSettings.PvpLevel);
+                userList = await _myKiritoService.GetUserListByLevel(AppSettings.MyKiritoDto.Lv + AppSettings.PvpLevel);
                 user = userList?.UserList.Where(x=>x.Color!="grey").OrderByDescending(x=>x.Color).ThenByDescending(x=>x.Lv).FirstOrDefault();
                 if (user != null) battleLog = await _myKiritoService.Challenge(user);
             }

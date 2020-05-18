@@ -31,5 +31,7 @@
 
         //自動投胎等級 (0為不自動投胎，預設:0級)
         public static int DefaultReIncarnationLevel;
+
+        public static MyKirito MyKiritoDto { get; set; } = null;
     }
 }

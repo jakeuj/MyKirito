@@ -43,7 +43,7 @@ namespace MyKirito
                 Console.WriteLine($"角色：{output.Nickname}, 等級{output.Lv}, 狀態" + (output.Dead ? "死亡" : "正常"));
                 return output;
             }
-            await OnErrorOccur(response.StatusCode, content);
+            await OnErrorOccur(response.StatusCode, content, "GetMyKirito");
             return null;
         }
 
@@ -63,7 +63,7 @@ namespace MyKirito
                 return output;
             }
 
-            await OnErrorOccur(response.StatusCode, content);
+            await OnErrorOccur(response.StatusCode, content, "DoAction");
             return null;
         }
 
@@ -85,7 +85,7 @@ namespace MyKirito
                 Console.WriteLine(output);
             }
 
-            await OnErrorOccur(response.StatusCode, content);
+            await OnErrorOccur(response.StatusCode, content, "ReIncarnation");
             return null;
         }
 
@@ -117,7 +117,7 @@ namespace MyKirito
                 return output;
             }
 
-            await OnErrorOccur(response.StatusCode, content);
+            await OnErrorOccur(response.StatusCode, content, "GetUserList");
             return null;
         }
 
@@ -139,11 +139,11 @@ namespace MyKirito
                 return output;
             }
 
-            await OnErrorOccur(response.StatusCode, content);
+            await OnErrorOccur(response.StatusCode, content, "Challenge");
             return null;
         }
 
-        private async Task OnErrorOccur(HttpStatusCode statusCode, HttpContent content)
+        private async Task OnErrorOccur(HttpStatusCode statusCode, HttpContent content, string message = "")
         {
             if (statusCode == HttpStatusCode.Forbidden)
             {
@@ -155,7 +155,7 @@ namespace MyKirito
                     var output = await decompressed.ReadAsJsonAsync<GZipStream, ErrorOutput>();
                     //var output = await input.ReadAsJsonAsync<ErrorOutput>();
                     Console.WriteLine(output.ToJsonString());
-                    Console.WriteLine($"驗證後按任意鍵繼續({AppSettings.DefaultAct.GetDescriptionText()})");
+                    Console.WriteLine($"驗證後按任意鍵繼續[{AppSettings.MyKiritoDto.Nickname}][{AppSettings.DefaultAct.GetDescriptionText()}] {message}");
                 }
                 catch
                 {

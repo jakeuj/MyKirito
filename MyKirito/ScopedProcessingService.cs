@@ -49,11 +49,11 @@ namespace MyKirito
                 if (await _yourService.GetMyKirito())
                 {
                     // 轉生限制條件：滿十等或死亡
-                    if (_yourService.MyKiritoDto.Dead || AppSettings.DefaultReIncarnationLevel > 0 &&
-                        _yourService.MyKiritoDto.Lv >= AppSettings.DefaultReIncarnationLevel)
+                    if (AppSettings.MyKiritoDto.Dead || AppSettings.DefaultReIncarnationLevel > 0 &&
+                        AppSettings.MyKiritoDto.Lv >= AppSettings.DefaultReIncarnationLevel)
                     {
                         // 計算轉生屬性點數
-                        var freePoints = CheckPoint(_yourService.MyKiritoDto.Lv);
+                        var freePoints = CheckPoint(AppSettings.MyKiritoDto.Lv);
                         // 開始轉生
                         if (await _yourService.ReIncarnation(freePoints))
                             _totalPoints += freePoints;
@@ -73,8 +73,8 @@ namespace MyKirito
                     addTime = Const.CheckTime + RandomCd.Next(1, AppSettings.RandTime);
                 else
                     addTime = Const.CheckTime;
-                if (_yourService.MyKiritoDto != null)
-                    Console.Write($"[{_yourService.MyKiritoDto.Lv}] {_yourService.MyKiritoDto.Nickname}, ");
+                if (AppSettings.MyKiritoDto != null)
+                    Console.Write($"[{AppSettings.MyKiritoDto.Lv}] {AppSettings.MyKiritoDto.Nickname}, ");
                 Console.WriteLine($"獲得 {_totalPoints} 屬性, 下次戰鬥： {_nextPvpTime}, 等待 {addTime} 秒...");
                 await Task.Delay(addTime * 1000, stoppingToken);
             }
