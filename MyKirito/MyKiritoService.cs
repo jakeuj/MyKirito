@@ -134,7 +134,8 @@ namespace MyKirito
                 await using var responseStream = await content.ReadAsStreamAsync();
                 await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
                 var output = await decompressed.ReadAsJsonAsync<GZipStream, BattleLog>();
-                Console.WriteLine(output.ToJsonString());
+                Console.WriteLine(output.Messages.ToJsonString());
+                Console.WriteLine(output.Result);
                 return output;
             }
 
