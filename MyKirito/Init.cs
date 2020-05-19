@@ -55,9 +55,9 @@ namespace MyKirito
             Console.WriteLine("Token 目前設定為：");
             Console.WriteLine(AppSettings.Token);
             Console.WriteLine($"等擊達到 {AppSettings.DefaultReIncarnationLevel} 時自動重生");
-            Console.WriteLine($"日常行為模式 {AppSettings.DefaultAct}");
-            Console.WriteLine($"重生時將選擇角色 {AppSettings.DefaultChar}");
-            Console.WriteLine($"PVP戰鬥模式為 {AppSettings.DefaultFight}");
+            Console.WriteLine($"日常行為模式 {AppSettings.DefaultAct.GetDescriptionText()}");
+            Console.WriteLine($"重生時將選擇角色 {AppSettings.DefaultChar.GetDescriptionText()}");
+            Console.WriteLine($"PVP戰鬥模式為 {AppSettings.DefaultFight.GetDescriptionText()}");
             Console.WriteLine($"冷卻時間設定介於 {Const.CheckTime} 秒 ~ {Const.CheckTime + AppSettings.RandTime} 秒");
             Console.WriteLine($"[一般]PVP目前會找高於自身等級 {AppSettings.PvpLevel} 的對手");
             Console.WriteLine($"[其次]PVP目前會集中攻擊 {AppSettings.PvpLevel}");
@@ -79,6 +79,7 @@ namespace MyKirito
                     if (!string.IsNullOrWhiteSpace(AppSettings.Token))
                     {
                         Console.WriteLine($"Token 目前設定為 {AppSettings.Token}");
+                        Console.WriteLine("======================================================================");
                         break;
                     }
 
@@ -96,34 +97,43 @@ namespace MyKirito
             if (!string.IsNullOrWhiteSpace(newInput) && int.TryParse(newInput, out var newLevel))
                 AppSettings.DefaultReIncarnationLevel = newLevel;
             Console.WriteLine($"等擊達到 {AppSettings.DefaultReIncarnationLevel} 時自動重生");
-
+            Console.WriteLine("======================================================================");
             // 更新預設動作
-            Console.Write($"[選填] 設定主要動作(預設：{AppSettings.DefaultAct}):");
-            foreach (var name in Enum.GetNames(typeof(ActionEnum))) Console.Write($" {name} ");
-            Console.WriteLine();
+            Console.Write($"[選填] 設定主要行動(預設：{AppSettings.DefaultAct.GetDescriptionText()}):");
+            foreach(ActionEnum enumType in Enum.GetValues(typeof(ActionEnum)))
+            {
+                Console.WriteLine($"{enumType.GetDescriptionText()}：{enumType}");
+            }
+            Console.WriteLine("請輸入行動英文代號：");
             newInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(newInput) && Enum.TryParse(newInput, true, out ActionEnum newActEnum))
                 AppSettings.DefaultAct = newActEnum;
-            Console.WriteLine($"日常行為模式 {AppSettings.DefaultAct}");
-
+            Console.WriteLine($"主要行動模式 {AppSettings.DefaultAct.GetDescriptionText()}");
+            Console.WriteLine("======================================================================");
             // 更新預設角色
-            Console.Write($"[選填] 設定重生角色(預設：{AppSettings.DefaultChar}):");
-            foreach (var name in Enum.GetNames(typeof(CharEnum))) Console.Write($" {name} ");
-            Console.WriteLine();
+            Console.Write($"[選填] 設定重生角色(預設：{AppSettings.DefaultChar.GetDescriptionText()}):");
+            foreach (CharEnum enumType in Enum.GetValues(typeof(CharEnum)))
+            {
+                Console.WriteLine($"{enumType.GetDescriptionText()}：{enumType}");
+            }
+            Console.WriteLine("請輸入角色英文代號：");
             newInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(newInput) && Enum.TryParse(newInput, true, out CharEnum newCharEnum))
                 AppSettings.DefaultChar = newCharEnum;
-            Console.WriteLine($"重生時將選擇角色 {AppSettings.DefaultChar}");
-
+            Console.WriteLine($"重生時將選擇角色 {AppSettings.DefaultChar.GetDescriptionText()}");
+            Console.WriteLine("======================================================================");
             // 更新自動戰鬥
-            Console.Write($"[選填] 設定戰鬥模式(預設：{AppSettings.DefaultFight}):");
-            foreach (var name in Enum.GetNames(typeof(FightEnum))) Console.Write($" {name} ");
-            Console.WriteLine();
+            Console.Write($"[選填] 設定戰鬥模式(預設：{AppSettings.DefaultFight.GetDescriptionText()}):");
+            foreach (FightEnum enumType in Enum.GetValues(typeof(FightEnum)))
+            {
+                Console.WriteLine($"{enumType.GetDescriptionText()}：{enumType}");
+            }
+            Console.WriteLine("請輸入戰鬥英文代號：");
             newInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(newInput) && Enum.TryParse(newInput, true, out FightEnum newFightEnum))
                 AppSettings.DefaultFight = newFightEnum;
-            Console.WriteLine($"PVP戰鬥模式為 {AppSettings.DefaultFight}");
-
+            Console.WriteLine($"PVP戰鬥模式為 {AppSettings.DefaultFight.GetDescriptionText()}");
+            Console.WriteLine("======================================================================");
             // 更新浮動CD時間
             Console.WriteLine(
                 $"[選填] 設定基礎冷卻時間({Const.CheckTime})的額外浮動秒數上限(預設：{AppSettings.RandTime})，共{Const.CheckTime + AppSettings.RandTime}秒:");
@@ -131,21 +141,21 @@ namespace MyKirito
             if (!string.IsNullOrWhiteSpace(newInput) && int.TryParse(newInput, out var newRandTime))
                 AppSettings.RandTime = newRandTime;
             Console.WriteLine($"冷卻時間設定介於 {Const.CheckTime} 秒 ~ {Const.CheckTime + AppSettings.RandTime} 秒");
-
+            Console.WriteLine("======================================================================");
             // 更新PVP對手經驗值增量
             Console.WriteLine($"[選填] 設定PVP對手等級增量(預設：{AppSettings.PvpLevel})");
             newInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(newInput) && int.TryParse(newInput, out var newExpPVP))
                 AppSettings.PvpLevel = newExpPVP;
             Console.WriteLine($"PVP目前會找高於自身等級 {AppSettings.PvpLevel} 的對手");
-
+            Console.WriteLine("======================================================================");
             // 更新PVP對手暱稱
             Console.WriteLine($"[選填] 設定PVP對手暱稱(預設：{AppSettings.PvpNickName})");
             newInput = Console.ReadLine();
             if (!string.IsNullOrWhiteSpace(newInput))
                 AppSettings.PvpNickName = newInput;
             Console.WriteLine($"PVP目前會集中攻擊 {AppSettings.PvpLevel}");
-
+            Console.WriteLine("======================================================================");
             // 更新PVP對手Uid
             Console.WriteLine($"[選填] 設定PVP對手暱稱(預設：{AppSettings.PvpUid})");
             newInput = Console.ReadLine();
