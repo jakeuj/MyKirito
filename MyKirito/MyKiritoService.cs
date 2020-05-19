@@ -117,7 +117,7 @@ namespace MyKirito
 
         public async Task<UserListDto> GetUserListByLevel(long level)
         {
-            var getRequestString = "user-list?page=2&lv=" + level;
+            var getRequestString = "user-list?lv=" + level;
             Console.Write("取得 {0} 等級的對手清單資料 ", level);
             return await GetUserList(getRequestString);
         }        
@@ -141,7 +141,7 @@ namespace MyKirito
             return null;
         }
 
-        public async Task<BattleLog> Challenge(long userLv, string userUid, string userNickName)
+        public async Task<(BattleLog battleLog, HttpStatusCode statusCode, ErrorOutput errorOutput)> Challenge(long userLv, string userUid, string userNickName)
         {
             var json = new ChallengeInput
             { Lv = userLv, OpponentUid = userUid, Type = (int)AppSettings.DefaultFight, Shout = string.Empty };
@@ -158,15 +158,14 @@ namespace MyKirito
                 output.Messages.Select(x => x.M).ToList().ForEach(Console.WriteLine);
                 //Console.WriteLine(output.Messages.ToJsonString());
                 Console.WriteLine($"與 [{userLv}] {userNickName} 戰鬥 {output.Result} 獲得 {output.Gained.Exp} 經驗");
-                return output;
-            }
-
-            await OnErrorOccur(response.StatusCode, content, "戰鬥");
-            return null;
+                return (output, response.StatusCode,null);
+            }            
+            return (null, response.StatusCode, await OnErrorOccur(response.StatusCode, content, "戰鬥"));
         }
 
-        private async Task OnErrorOccur(HttpStatusCode statusCode, HttpContent content, string message = "")
+        private async Task<ErrorOutput> OnErrorOccur(HttpStatusCode statusCode, HttpContent content, string message = "")
         {
+            ErrorOutput errorOutput = null;
             if (statusCode == HttpStatusCode.Forbidden)
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
@@ -176,8 +175,8 @@ namespace MyKirito
                     //await using var responseStream = await content.ReadAsStreamAsync();
                     //await using var decompressed = new GZipStream(responseStream, CompressionMode.Decompress);
                     //var output = await decompressed.ReadAsJsonAsync<GZipStream, ErrorOutput>();
-                    var output = await content.ReadAsJsonAsync<ErrorOutput>();
-                    Console.WriteLine(output.ToJsonString());
+                    errorOutput = await content.ReadAsJsonAsync<ErrorOutput>();
+                    Console.WriteLine(errorOutput.ToJsonString());
                     Console.ForegroundColor = ConsoleColor.Magenta;
                     Console.WriteLine($"[{AppSettings.MyKiritoDto.Nickname}] 驗證 [{message}] 後 [{AppSettings.DefaultAct.GetDescriptionText()}] 按任意鍵繼續");                    
                 }
@@ -197,8 +196,8 @@ namespace MyKirito
                 // 冷卻中or你的角色現在是死亡狀態
                 try
                 {
-                    var output = await content.ReadAsJsonAsync<ErrorOutput>();
-                    Console.WriteLine(output.ToJsonString());
+                    errorOutput = await content.ReadAsJsonAsync<ErrorOutput>();
+                    Console.WriteLine(errorOutput.ToJsonString());
                 }
                 catch
                 {
@@ -221,6 +220,7 @@ namespace MyKirito
                     Console.WriteLine(e);
                 }
             }
+            return errorOutput;
         }
     }
 }

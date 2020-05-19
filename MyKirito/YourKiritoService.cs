@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace MyKirito
@@ -79,31 +80,101 @@ namespace MyKirito
 
         public async Task<bool> GetUserListThenChallenge()
         {
+            bool stopFlag = false;
             UserListDto userList;
             UserList user;
             BattleLog battleLog = null;
+            HttpStatusCode httpStatusCode = HttpStatusCode.UpgradeRequired;
+            ErrorOutput errorOutput=null;
+            string coonDownMessage = "還在冷卻中";
             if (!string.IsNullOrWhiteSpace(AppSettings.PvpUid))
             {
                 var uidUser = await _myKiritoService.GetProfile(AppSettings.PvpUid);
                 if (uidUser != null && uidUser.profile != null)
                 {
                     if (!uidUser.profile.dead)
-                        battleLog = await _myKiritoService.Challenge(uidUser.profile.lv, uidUser.profile._id, uidUser.profile.nickname);
+                        (battleLog, httpStatusCode, errorOutput) = await _myKiritoService.Challenge(uidUser.profile.lv, uidUser.profile._id, uidUser.profile.nickname);
                     if (!string.IsNullOrWhiteSpace(AppSettings.PvpNickName) && uidUser.profile.nickname == AppSettings.PvpNickName)
                         AppSettings.PvpNickName = string.Empty;
+                    if (httpStatusCode == HttpStatusCode.Forbidden)
+                        return true;
+                    if (errorOutput != null && errorOutput.Error.Contains(coonDownMessage))
+                        return false;
                 }                
             }
             if (!string.IsNullOrWhiteSpace(AppSettings.PvpNickName) && battleLog == null)
             {                
                 userList = await _myKiritoService.GetUserByName(AppSettings.PvpNickName);
-                user = userList?.UserList.FirstOrDefault();
-                if (user != null) battleLog = await _myKiritoService.Challenge(user.Lv,user.Uid,user.Nickname);
+                if(userList!=null && userList.UserList !=null && userList.UserList.Any())
+                {
+                    user = userList.UserList.FirstOrDefault();
+                    if(user!=null)
+                    {
+                        if(string.IsNullOrWhiteSpace(AppSettings.PvpUid))
+                            AppSettings.PvpUid = user.Uid;
+                        if (user != null) (battleLog, httpStatusCode, errorOutput) = await _myKiritoService.Challenge(user.Lv, user.Uid, user.Nickname);
+                        if (httpStatusCode == HttpStatusCode.Forbidden)
+                            return true;
+                        if (errorOutput != null && errorOutput.Error.Contains(coonDownMessage))
+                            return false;
+                    }                    
+                }                
             }
-            if (AppSettings.MyKiritoDto != null && battleLog == null)
+            if ((errorOutput == null || !errorOutput.Error.Contains(coonDownMessage)) && httpStatusCode != HttpStatusCode.Forbidden && AppSettings.MyKiritoDto != null && battleLog == null)
             {
                 userList = await _myKiritoService.GetUserListByLevel(AppSettings.MyKiritoDto.Lv + AppSettings.PvpLevel);
-                user = userList?.UserList.Where(x=>x.Color!="grey").OrderByDescending(x=>x.Color).ThenByDescending(x=>x.Lv).FirstOrDefault();
-                if (user != null) battleLog = await _myKiritoService.Challenge(user.Lv, user.Uid, user.Nickname);
+                if(userList != null && userList.UserList != null && userList.UserList.Any())
+                {
+                    var users = userList.UserList;
+                    users.RemoveAll(x => x.Color == "grey");
+                    // 先打紅 橘
+                    foreach (var u in users.Where(x=> AppSettings.ColorPVP.Contains(x.Color)).OrderBy(x => x.Color).ThenBy(x=>x.Floor))
+                    {
+                        (battleLog, httpStatusCode, errorOutput) = await _myKiritoService.Challenge(u.Lv, u.Uid, u.Nickname);
+                        if (httpStatusCode == HttpStatusCode.Forbidden)
+                            return true;
+                        if (errorOutput != null && errorOutput.Error.Contains(coonDownMessage))
+                            return false;
+                        if(battleLog != null)
+                            return true;
+                    }
+                    users.RemoveAll(x => AppSettings.ColorPVP.Contains(x.Color));
+                    // 先打喜歡的人
+                    foreach (var u in users.Where(x => AppSettings.CharacterPVP.Contains(x.Character)).OrderBy(x => x.Floor))
+                    {
+                        (battleLog, httpStatusCode, errorOutput) = await _myKiritoService.Challenge(u.Lv, u.Uid, u.Nickname);
+                        if (httpStatusCode == HttpStatusCode.Forbidden)
+                            return true;
+                        if (errorOutput != null && errorOutput.Error.Contains(coonDownMessage))
+                            return false;
+                        if (battleLog != null)
+                            return true;
+                    }
+                    users.RemoveAll(x => AppSettings.CharacterPVP.Contains(x.Character));
+                    // 先不打討厭的人
+                    foreach (var u in users.Where(x => !AppSettings.NotWantCharacterPVP.Contains(x.Character)).OrderBy(x => x.Floor))
+                    {
+                        (battleLog, httpStatusCode, errorOutput) = await _myKiritoService.Challenge(u.Lv, u.Uid, u.Nickname);
+                        if (httpStatusCode == HttpStatusCode.Forbidden)
+                            return true;
+                        if (errorOutput != null && errorOutput.Error.Contains(coonDownMessage))
+                            return false;
+                        if (battleLog != null)
+                            return true;
+                    }
+                    users.RemoveAll(x => !AppSettings.NotWantCharacterPVP.Contains(x.Character));
+                    // 打剩下的人
+                    foreach (var u in users.OrderBy(x => x.Floor))
+                    {
+                        (battleLog, httpStatusCode, errorOutput) = await _myKiritoService.Challenge(u.Lv, u.Uid, u.Nickname);
+                        if (httpStatusCode == HttpStatusCode.Forbidden)
+                            return true;
+                        if (errorOutput != null && errorOutput.Error.Contains(coonDownMessage))
+                            return false;
+                        if (battleLog != null)
+                            return true;
+                    }
+                }
             }
             return battleLog != null;
         }

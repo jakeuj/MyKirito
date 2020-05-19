@@ -39,7 +39,11 @@ namespace MyKirito
         [Description("克拉帝爾")] Kuradeel,
         [Description("金·布拉德雷")] Bradley,
         [Description("哥德夫利")] Godfree,
-        [Description("努西")] Fish
+        [Description("努西")] Fish,
+        [Description("星爆小拳石")] Geodude,
+        [Description("愛麗絲")] Alice,
+        
+
     }
 
     // 戰鬥列舉值
