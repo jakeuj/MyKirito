@@ -7,14 +7,15 @@ namespace MyKirito
         public static void Initialization(string[] args)
         {
             Console.WriteLine("======================================================================");
-            Console.WriteLine("[提示] 可以給參數執行");
+            Console.WriteLine("[提示] 可以給執行參數並設定安靜模式來略過輸入設定值的流程");
             Console.WriteLine("[格式] dotnet MyKirito.dll {參數}");
             Console.WriteLine("[參數] Token 重生等級 行為 角色 PVP  CD 安靜 PVP等級 PVP暱稱 PVP識別碼");
             Console.WriteLine("[範例] MyKirito.exe ABC123.456 15 Eat Eugeo Hard 100 1 5 桐人 a1b2c3d4");
             Console.WriteLine("[結果1] PVP會先找a1b2c3d4使用者再找桐人最後找高於自身5級的人打");
             Console.WriteLine("[結果2] 不會再詢問設定值，每100~200秒執行一次動作並且認真對戰");
             Console.WriteLine("[結果3] 死亡會重生為尤吉歐並自動野餐，使用的使用者權杖為ABC123.456");
-            Console.WriteLine("[建議] PVP如要針對，最好用識別碼 A 0 Eat Eugeo Hard 0 1 5 \"\" a1b2c3d4");
+            Console.WriteLine("[建議] PVP如要指名，優先設定識別碼，暱稱為空，雖然相同時會清除暱稱設定");
+            Console.WriteLine("[範例] MyKirito.exe ABC123.456 15 Eat Eugeo Hard 100 1 5 \"\" a1b2c3d4");
             Console.WriteLine("======================================================================");
             // 接收Token參數
             if (args.Length > 0)
@@ -60,8 +61,10 @@ namespace MyKirito
             Console.WriteLine($"PVP戰鬥模式為 {AppSettings.DefaultFight.GetDescriptionText()}");
             Console.WriteLine($"冷卻時間設定介於 {Const.CheckTime} 秒 ~ {Const.CheckTime + AppSettings.RandTime} 秒");
             Console.WriteLine($"[一般]PVP目前會找高於自身等級 {AppSettings.PvpLevel} 的對手");
-            Console.WriteLine($"[其次]PVP目前會集中攻擊 {AppSettings.PvpLevel}");
+            Console.WriteLine($"[其次]PVP目前會集中攻擊 {AppSettings.PvpNickName}");
             Console.WriteLine($"[優先]PVP目前會集中攻擊 Uid= {AppSettings.PvpUid} 的玩家");
+            Console.WriteLine($"本次執行參數如下(可複製並製作批次檔方便下次執行)：");
+            Console.WriteLine($"{AppSettings.Token} {AppSettings.DefaultReIncarnationLevel} {AppSettings.DefaultAct} {AppSettings.DefaultChar} {AppSettings.DefaultFight} {AppSettings.RandTime} {(AppSettings.IsAsk?0:1)} {AppSettings.PvpLevel} \"{AppSettings.PvpNickName}\" {AppSettings.PvpUid}");
             Console.WriteLine("======================================================================");
         }
 
