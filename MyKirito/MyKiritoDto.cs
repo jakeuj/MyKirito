@@ -259,7 +259,7 @@ namespace MyKirito
         public int win { get; set; }
         public string character { get; set; }
         public string avatar { get; set; }
-    }    
+    }
 
     public class Unlockedcharacter
     {

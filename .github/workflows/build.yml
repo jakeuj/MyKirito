@@ -31,12 +31,14 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
       with:
         tag_name: ${{ github.run_id }}
-        release_name: MyKiritoV${{ github.run_id }}
+        release_name: MyKiritoV2.${{ github.run_id }}
         body: |
           - Require
           [.NET Core Runtime 3.1](https://dotnet.microsoft.com/download/dotnet-core/3.1)
           - Use
-          dotnet MyKirito.dll
+          see ReadMe.txt
+          - OnLine Version
+          [YourKirito](https://yourkirito.azurewebsites.net/)          
         draft: false
         prerelease: false
     - name: Upload Release Asset
