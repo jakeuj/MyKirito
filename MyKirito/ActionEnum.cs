@@ -5,6 +5,7 @@ namespace MyKirito
     // 行動列舉值
     public enum ActionEnum
     {
+        [Description("不做事")] None = -1,
         [Description("坐下休息")] Sit,
         [Description("做善事")] Good,
         [Description("自主訓練")] Train,
@@ -16,6 +17,7 @@ namespace MyKirito
 
     public enum CharEnum
     {
+        [Description("不轉生")] None = -1,
         [Description("桐人")] Kirito,
         [Description("初見泉")] Hatsumi,
         [Description("尤吉歐")] Eugeo,
@@ -42,14 +44,12 @@ namespace MyKirito
         [Description("努西")] Fish,
         [Description("星爆小拳石")] Geodude,
         [Description("愛麗絲")] Alice,
-        
-
     }
 
     // 戰鬥列舉值
     public enum FightEnum
     {
-        [Description("深蹲中...")] None = -1,
+        [Description("不主動出戰")] None = -1,
         [Description("友好切磋")] Friend,
         [Description("認真對決")] Hard,
         [Description("決一死戰")] Duo,
