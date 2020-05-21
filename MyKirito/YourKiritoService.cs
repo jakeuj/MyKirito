@@ -175,7 +175,7 @@ namespace MyKirito
                 }
             }
             _logger.LogDebug("MustIsCharacterPVP");
-            while (Global.GameOptions.MustIsModeEnable && (Global.GameOptions.MustIsModeIgnore || (Global.GameOptions.MustIsCharacterPVP!=null && Global.GameOptions.MustIsCharacterPVP.Any())) &&  Global.GameOptions.CurrentSearchLv >= Global.MyKiritoDto.Lv)
+            while (Global.GameOptions.MustIsModeEnable &&  Global.GameOptions.CurrentSearchLv >= Global.MyKiritoDto.Lv)
             {
                 _logger.LogDebug($"取得目標清單：Lv={Global.GameOptions.CurrentSearchLv}, Page={Global.GameOptions.CurrentPage}");
                 userList = await _myKiritoService.GetUserListByLevel(Global.GameOptions.CurrentSearchLv, Global.GameOptions.CurrentPage);
@@ -190,7 +190,7 @@ namespace MyKirito
                 List<UserList> users = userList.UserList;
                 _logger.LogDebug("排除不打的資料並排序");
                 users.RemoveAll(x => x.Color == "grey" || x.Lv < Global.MyKiritoDto.Lv || Global.GameOptions.LostUidListPVP.Contains(x.Uid));
-                if (Global.GameOptions.MustIsModeIgnore == false)
+                if (Global.GameOptions.MustIsModeIgnore == false && Global.GameOptions.MustIsCharacterPVP != null && Global.GameOptions.MustIsCharacterPVP.Any())
                     users.RemoveAll(x => Global.GameOptions.MustIsCharacterPVP.Contains(x.Character));
                 if (!users.Any())
                 {
