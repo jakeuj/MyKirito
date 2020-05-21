@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -84,9 +85,21 @@ namespace MyKirito
             Console.WriteLine($"重生時將選擇角色 {Global.GameOptions.DefaultChar.GetDescriptionText()}");
             Console.WriteLine($"PVP戰鬥模式為 {Global.GameOptions.DefaultFight.GetDescriptionText()}");
             Console.WriteLine($"冷卻時間設定介於 {Global.CheckTime} 秒 ~ {Global.CheckTime + Global.GameOptions.RandTime} 秒");
-            Console.WriteLine($"[一般]PVP目前會找高於自身等級 {Global.GameOptions.PvpLevel} 的對手");
-            Console.WriteLine($"[其次]PVP目前會集中攻擊 {Global.GameOptions.PvpNickName}");
-            Console.WriteLine($"[優先]PVP目前會集中攻擊 Uid= {Global.GameOptions.PvpUid} 的玩家");
+            if(Global.GameOptions.DefaultFight != FightEnum.None)
+            {
+                if (!string.IsNullOrWhiteSpace(Global.GameOptions.PvpUid))
+                    Console.WriteLine($"PVP目前會優先攻擊 Uid= {Global.GameOptions.PvpUid} 的玩家");
+                else if(!string.IsNullOrWhiteSpace(Global.GameOptions.PvpNickName))
+                    Console.WriteLine($"PVP目前會集中攻擊 {Global.GameOptions.PvpNickName}");
+                if (string.IsNullOrWhiteSpace(Global.GameOptions.PvpUid) && string.IsNullOrWhiteSpace(Global.GameOptions.PvpNickName) && Global.GameOptions.MustIsModeEnable)
+                {
+                    if (Global.GameOptions.MustIsModeIgnore)
+                        Console.WriteLine($"PVP目前會從最高等級對手開始進行地毯式無差別攻擊");
+                    else if (Global.GameOptions.MustIsCharacterPVP != null && Global.GameOptions.MustIsCharacterPVP.Any())
+                        Console.WriteLine($"PVP目前會從最高等級對手開始針對特定角色攻擊 " + string.Join(" ", Global.GameOptions.MustIsCharacterPVP));
+                }
+                Console.WriteLine($"[一般]PVP目前會找高於自身等級 {Global.GameOptions.PvpLevel} 的對手");
+            }            
             Console.WriteLine("======================================================================");
         }
 

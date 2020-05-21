@@ -32,9 +32,7 @@ namespace MyKirito
         public  string PvpUid { get; set; }
 
         public string[] ColorPVP { get; set; } = new string[] { "red",    "orange"};
-
-        public bool MustIsModeEnable { get; set; }
-        public  List<string> MustIsCharacterPVP { get; set; }
+        
         public List<string> CharacterPVP { get; set; } = new List<string> { "莉茲貝特" };
         public  List<string> NotWantCharacterPVP { get; set; } = new List<string> { "希茲克利夫" };
 
@@ -48,7 +46,12 @@ namespace MyKirito
         public  int DefaultReIncarnationLevel { get; set; }
 
         //打不贏的人
-        public List<string> LostUidListPVP { get; set; } = new List<string> { "5ec3529f431b010405263676" };
+        public HashSet<string> LostUidListPVP { get ; set; } = new HashSet<string> { "5ec3529f431b010405263676" };
+
+        public bool MustIsModeEnable { get; set; }
+
+        public bool MustIsModeIgnore { get; set; }
+        public List<string> MustIsCharacterPVP { get; set; } = new List<string> { "莉茲貝特" };
 
         //目前正在打的人
         public  UserList CurrentPvpUser { get; set; }

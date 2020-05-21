@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -144,47 +145,19 @@ namespace MyKirito
             if (Global.MyKiritoDto == null)
                 return false;
             _logger.LogDebug("CurrentPvpUser");
-            if (Global.GameOptions.CurrentPvpUser!=null)
+            if (Global.GameOptions.CurrentPvpUser!=null && Global.GameOptions.CurrentPvpUser.Lv> Global.MyKiritoDto.Lv)
             {
                 var uidUser = await _myKiritoService.GetProfile(Global.GameOptions.CurrentPvpUser.Uid);
                 if (uidUser != null && uidUser.profile != null)
                 {
-                    if (!uidUser.profile.dead && uidUser.profile.lv >= Global.MyKiritoDto.Lv)
-                        (battleLog, httpStatusCode, errorOutput) = await _myKiritoService.Challenge(uidUser.profile.lv, uidUser.profile._id, uidUser.profile.nickname);
-                    if (httpStatusCode == HttpStatusCode.Forbidden)
-                        return true;
-                    if (errorOutput != null && errorOutput.Error.Contains(coonDownMessage))
-                        return false;
-                    if (battleLog != null)
+                    if(uidUser.profile.dead || Global.MyKiritoDto.Lv > uidUser.profile.lv)
                     {
-                        if (battleLog.Result != "勝利")
-                        {
-                            Global.GameOptions.LostUidListPVP.Add(Global.GameOptions.CurrentPvpUser.Uid);
-                            Global.GameOptions.CurrentPvpUser = null;                                             
-                        }
-                        return true;
-                    }
-                }
-            }
-            _logger.LogDebug("MustIsCharacterPVP");
-            while (Global.GameOptions.MustIsModeEnable && Global.GameOptions.MustIsCharacterPVP.Any() &&  Global.GameOptions.CurrentSearchLv >= Global.MyKiritoDto.Lv)
-            {
-                userList = await _myKiritoService.GetUserListByLevel(Global.GameOptions.CurrentSearchLv, Global.GameOptions.CurrentPage);
-                if (userList != null && userList.UserList != null && userList.UserList.Any())
-                {
-                    if (Global.GameOptions.CurrentSearchLv == userList.UserList.Min(x => x.Lv))
-                    {
-                        Global.GameOptions.CurrentPage++;
-                    }
+                        Global.GameOptions.LostUidListPVP.Add(Global.GameOptions.CurrentPvpUser.Uid);
+                        Global.GameOptions.CurrentPvpUser = null;
+                    }                        
                     else
                     {
-                        Global.GameOptions.CurrentSearchLv = userList.UserList.Min(x => x.Lv);
-                        Global.GameOptions.CurrentPage = 1;
-                    }
-                    var users = userList.UserList.Where(x=>x.Color!= "grey" && Global.GameOptions.MustIsCharacterPVP.Contains(x.Character) && !Global.GameOptions.LostUidListPVP.Contains(x.Nickname) && x.Lv>= Global.MyKiritoDto.Lv).OrderByDescending(x => x.Color).OrderByDescending(x=>x.Lv).ThenBy(x => x.Floor).ToList();
-                    foreach (var u in users)
-                    {
-                        (battleLog, httpStatusCode, errorOutput) = await _myKiritoService.Challenge(u.Lv, u.Uid, u.Nickname);
+                        (battleLog, httpStatusCode, errorOutput) = await _myKiritoService.Challenge(uidUser.profile.lv, uidUser.profile._id, uidUser.profile.nickname);
                         if (httpStatusCode == HttpStatusCode.Forbidden)
                             return true;
                         if (errorOutput != null && errorOutput.Error.Contains(coonDownMessage))
@@ -193,19 +166,88 @@ namespace MyKirito
                         {
                             if (battleLog.Result != "勝利")
                             {
+                                Global.GameOptions.LostUidListPVP.Add(Global.GameOptions.CurrentPvpUser.Uid);
                                 Global.GameOptions.CurrentPvpUser = null;
-                                Global.GameOptions.LostUidListPVP.Add(u.Uid);                                
                             }
-                            else
-                            {
-                                Global.GameOptions.CurrentPvpUser = u;
-                            }                                
                             return true;
-                        }                            
+                        }
                     }
                 }
+            }
+            _logger.LogDebug("MustIsCharacterPVP");
+            while (Global.GameOptions.MustIsModeEnable && (Global.GameOptions.MustIsModeIgnore || (Global.GameOptions.MustIsCharacterPVP!=null && Global.GameOptions.MustIsCharacterPVP.Any())) &&  Global.GameOptions.CurrentSearchLv >= Global.MyKiritoDto.Lv)
+            {
+                _logger.LogDebug($"取得目標清單：Lv={Global.GameOptions.CurrentSearchLv}, Page={Global.GameOptions.CurrentPage}");
+                userList = await _myKiritoService.GetUserListByLevel(Global.GameOptions.CurrentSearchLv, Global.GameOptions.CurrentPage);
+                if (userList == null || userList.UserList == null || !userList.UserList.Any())
+                {
+                    _logger.LogDebug("清單取得失敗");
+                    break;
+                }
+                
+                var minLv = userList.UserList.Min(x => x.Lv);
+                _logger.LogDebug($"紀錄目前清單的最低等級 {minLv}");
+                List<UserList> users = userList.UserList;
+                _logger.LogDebug("排除不打的資料並排序");
+                users.RemoveAll(x => x.Color == "grey" || x.Lv < Global.MyKiritoDto.Lv || Global.GameOptions.LostUidListPVP.Contains(x.Uid));
+                if (Global.GameOptions.MustIsModeIgnore == false)
+                    users.RemoveAll(x => Global.GameOptions.MustIsCharacterPVP.Contains(x.Character));
+                if (!users.Any())
+                {
+                    _logger.LogDebug("如果沒有資料則直接繼續下一個迴圈取得下一頁");
+                    Global.GameOptions.CurrentPage++;
+                    continue;
+                }
+                _logger.LogDebug("篩選後還有剩餘資料，逐一對目標進行挑戰");
+                foreach (var u in users)
+                {
+                    _logger.LogDebug($"{u.Lv} - {u.Uid} - {u.Nickname}");
+                    (battleLog, httpStatusCode, errorOutput) = await _myKiritoService.Challenge(u.Lv, u.Uid, u.Nickname);
+                    _logger.LogDebug("處理挑戰結果");
+                    if (httpStatusCode == HttpStatusCode.Forbidden)
+                    {
+                        _logger.LogDebug("驗證後紀錄當前玩家並進行冷卻");
+                        Global.GameOptions.CurrentPvpUser = u;
+                        return true;
+                    }                            
+                    if (errorOutput != null && errorOutput.Error.Contains(coonDownMessage))
+                    {
+                        _logger.LogDebug("自身冷卻中，紀錄當前玩家並退出");
+                        Global.GameOptions.CurrentPvpUser = u;
+                        return false;
+                    }
+                    if (battleLog == null)
+                    {
+                        _logger.LogDebug("戰鬥未完成，可能死了或重生，加入黑名單後繼續對戰下一個目標");
+                        Global.GameOptions.LostUidListPVP.Add(u.Uid);
+                        continue;
+                    }                        
+                    if (battleLog.Result == "勝利")
+                    {
+                        _logger.LogDebug("戰鬥完成並勝利，紀錄當前玩家供下次對戰使用");
+                        Global.GameOptions.CurrentPvpUser = u;
+                    }
+                    else
+                    {
+                        _logger.LogDebug("戰鬥完成並輸了，加入黑名單");
+                        Global.GameOptions.CurrentPvpUser = null;
+                        Global.GameOptions.LostUidListPVP.Add(u.Uid);
+                    }
+                    _logger.LogDebug("戰鬥完成後退出");
+                    return true;
+                }
+                _logger.LogDebug("目標清單處理完成");
+                if (Global.GameOptions.CurrentSearchLv == minLv)
+                {
+                    _logger.LogDebug($"最低等級{minLv}等於搜尋等級{Global.GameOptions.CurrentSearchLv}，進行翻頁");
+                    Global.GameOptions.CurrentPage++;
+                }
                 else
-                    break;               
+                {
+                    _logger.LogDebug($"搜尋等級{Global.GameOptions.CurrentSearchLv}高於最低等級{minLv}，搜尋條件更新為最低等級，重置頁次");
+                    Global.GameOptions.CurrentSearchLv = minLv;
+                    Global.GameOptions.CurrentPage = 1;
+                }
             }
             _logger.LogDebug("GetUserListByLevel"+ Global.MyKiritoDto.Lv + Global.GameOptions.PvpLevel);
             userList = await _myKiritoService.GetUserListByLevel(Global.MyKiritoDto.Lv + Global.GameOptions.PvpLevel);
