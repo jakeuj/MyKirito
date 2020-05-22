@@ -1,22 +1,21 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using System;
+﻿using System;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 
 namespace MyKirito
 {
     public class MyKiritoService : IMyKiritoService
     {
+        private readonly ILogger _logger;
+
         // _httpClient isn't exposed publicly
         private readonly HttpClient Client;
-        private readonly ILogger _logger;
+
         public MyKiritoService(HttpClient client, ILogger<MyKiritoService> logger)
         {
             _logger = logger;
@@ -32,19 +31,21 @@ namespace MyKirito
                 "ozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36");
             client.DefaultRequestHeaders.Add("token", Global.GameOptions.Token);
             Client = client;
-        }        
+        }
 
         public async Task<ProfileDto> GetProfile(string uid)
         {
-            var response = await Client.GetAsync("profile/"+uid);
+            var response = await Client.GetAsync("profile/" + uid);
             Console.WriteLine($"取得 {uid} 資料 {response.StatusCode}");
             var content = response.Content;
             if (response.IsSuccessStatusCode)
             {
                 var output = await content.ReadAsJsonAsync<ProfileDto>();
-                Console.WriteLine($"角色：{output.profile.nickname}, 等級{output.profile.lv}, 狀態" + (output.profile.dead ? "死亡" : "正常"));
+                Console.WriteLine($"角色：{output.profile.nickname}, 等級{output.profile.lv}, 狀態" +
+                                  (output.profile.dead ? "死亡" : "正常"));
                 return output;
             }
+
             await OnErrorOccur(response.StatusCode, content, "GetProfile");
             return null;
         }
@@ -60,6 +61,7 @@ namespace MyKirito
                 Console.WriteLine($"角色：{output.Nickname}, 等級{output.Lv}, 狀態" + (output.Dead ? "死亡" : "正常"));
                 return output;
             }
+
             await OnErrorOccur(response.StatusCode, content, "GetMyKirito");
             return null;
         }
@@ -73,7 +75,7 @@ namespace MyKirito
             var content = response.Content;
             if (response.IsSuccessStatusCode)
             {
-                var output = await content.ReadAsJsonAsync<ActionOutput>();                
+                var output = await content.ReadAsJsonAsync<ActionOutput>();
                 Console.WriteLine(output.Message);
                 if (output != null && output.Gained != null && output.Gained.Hp != null)
                     await WriteJson(output.Gained, ActionEnum.None);
@@ -113,11 +115,37 @@ namespace MyKirito
             return await GetUserList(getRequestString);
         }
 
-        public async Task<UserListDto> GetUserListByLevel(long level, long page=1)
+        public async Task<UserListDto> GetUserListByLevel(long level, long page = 1)
         {
             var getRequestString = $"user-list?lv={level}&page={page}";
             Console.Write($"取得 {level} 等級的對手清單資料{page} ");
             return await GetUserList(getRequestString);
+        }
+
+        public async Task<(BattleLog battleLog, HttpStatusCode statusCode, ErrorOutput errorOutput)> Challenge(
+            long userLv, string userUid, string userNickName)
+        {
+            var json = new ChallengeInput
+            {
+                Lv = userLv, OpponentUid = userUid, Type = (int) Global.GameOptions.DefaultFight, Shout = string.Empty
+            };
+            HttpContent contentPost = new StringContent(json.ToJsonString(), Encoding.UTF8, "application/json");
+            var response = await Client.PostAsync("challenge", contentPost);
+            Console.WriteLine(
+                $"嘗試與[{userLv}][{userNickName}][{userUid}] 進行 {Global.GameOptions.DefaultFight.GetDescriptionText()} {response.StatusCode}");
+            var content = response.Content;
+            if (response.IsSuccessStatusCode)
+            {
+                var output = await content.ReadAsJsonAsync<BattleLog>();
+                output.Messages.Select(x => x.M).ToList().ForEach(Console.WriteLine);
+                Console.WriteLine($"與 [{userLv}] {userNickName} 戰鬥 {output.Result} 獲得 {output.Gained.Exp} 經驗");
+                if (output != null && output.Gained != null && output.Gained.Hp != null)
+                    await WriteJson(output.Gained, ActionEnum.None, output.Result == "勝利");
+
+                return (output, response.StatusCode, null);
+            }
+
+            return (null, response.StatusCode, await OnErrorOccur(response.StatusCode, content, "戰鬥", 2));
         }
 
         private async Task<UserListDto> GetUserList(string getRequestString)
@@ -136,39 +164,20 @@ namespace MyKirito
             return null;
         }
 
-        public async Task<(BattleLog battleLog, HttpStatusCode statusCode, ErrorOutput errorOutput)> Challenge(long userLv, string userUid, string userNickName)
-        {
-            var json = new ChallengeInput
-            { Lv = userLv, OpponentUid = userUid, Type = (int)Global.GameOptions.DefaultFight, Shout = string.Empty };
-            HttpContent contentPost = new StringContent(json.ToJsonString(), Encoding.UTF8, "application/json");
-            var response = await Client.PostAsync("challenge", contentPost);
-            Console.WriteLine($"嘗試與[{userLv}][{userNickName}][{userUid}] 進行 {Global.GameOptions.DefaultFight.GetDescriptionText()} {response.StatusCode}");
-            var content = response.Content;
-            if (response.IsSuccessStatusCode)
-            {
-                var output = await content.ReadAsJsonAsync<BattleLog>();
-                output.Messages.Select(x => x.M).ToList().ForEach(Console.WriteLine);
-                Console.WriteLine($"與 [{userLv}] {userNickName} 戰鬥 {output.Result} 獲得 {output.Gained.Exp} 經驗");
-                if (output != null && output.Gained != null && output.Gained.Hp != null)
-                    await WriteJson(output.Gained, ActionEnum.None, output.Result == "勝利");
-                
-                return (output, response.StatusCode,null);
-            }            
-            return (null, response.StatusCode, await OnErrorOccur(response.StatusCode, content, "戰鬥", 2));
-        }
-
-        private async Task WriteJson(Gained gained, ActionEnum act, bool win=false)
+        private async Task WriteJson(Gained gained, ActionEnum act, bool win = false)
         {
             _logger.LogDebug($"寫入 {Global.JsonPath} {Global.CsvFileName} 開始");
             Console.WriteLine("已升級，準備寫入升級資訊：");
             Console.WriteLine(gained.ToJsonString());
             try
             {
-                using (StreamWriter outputFile = new StreamWriter(Path.Combine(Global.JsonPath, Global.CsvFileName), true))
+                using (var outputFile = new StreamWriter(Path.Combine(Global.JsonPath, Global.CsvFileName), true))
                 {
-                    await outputFile.WriteLineAsync($"{act},{win},{gained.Hp},{gained.Atk},{gained.Def},{gained.Stm},{gained.Agi},{gained.Spd},{gained.Tec},{gained.Int},{gained.Lck},{gained.PrevLv},{gained.NextLv},{gained.Exp},{gained.PrevTitle}");
+                    await outputFile.WriteLineAsync(
+                        $"{act},{win},{gained.Hp},{gained.Atk},{gained.Def},{gained.Stm},{gained.Agi},{gained.Spd},{gained.Tec},{gained.Int},{gained.Lck},{gained.PrevLv},{gained.NextLv},{gained.Exp},{gained.PrevTitle}");
                 }
-                Console.WriteLine("升級紀錄完成");              
+
+                Console.WriteLine("升級紀錄完成");
                 _logger.LogInformation($"寫入 {Global.JsonPath} {Global.CsvFileName} 成功");
             }
             catch (Exception ex)
@@ -177,10 +186,12 @@ namespace MyKirito
                 _logger.LogError($"寫入 {Global.JsonPath} {Global.CsvFileName} 失敗");
                 Console.WriteLine(ex.Message);
             }
+
             _logger.LogDebug($"寫入 {Global.JsonPath} {Global.CsvFileName} 完成");
         }
 
-        private async Task<ErrorOutput> OnErrorOccur(HttpStatusCode statusCode, HttpContent content, string message = "", int from = 0)
+        private async Task<ErrorOutput> OnErrorOccur(HttpStatusCode statusCode, HttpContent content,
+            string message = "", int from = 0)
         {
             ErrorOutput errorOutput = null;
             if (statusCode == HttpStatusCode.Forbidden)
@@ -200,7 +211,9 @@ namespace MyKirito
                         Console.BackgroundColor = ConsoleColor.DarkBlue;
                         Console.ForegroundColor = ConsoleColor.Cyan;
                     }
-                    Console.WriteLine($"[{Global.MyKiritoDto.Nickname}] 驗證 [{message}] 後 [{Global.GameOptions.DefaultAct.GetDescriptionText()}] 按任意鍵繼續");                    
+
+                    Console.WriteLine(
+                        $"[{Global.MyKiritoDto.Nickname}] 驗證 [{message}] 後 [{Global.GameOptions.DefaultAct.GetDescriptionText()}] 按任意鍵繼續");
                 }
                 catch
                 {
@@ -211,13 +224,15 @@ namespace MyKirito
                         Console.BackgroundColor = ConsoleColor.DarkMagenta;
                         Console.ForegroundColor = ConsoleColor.Yellow;
                     }
-                    else if(from == 2)
+                    else if (from == 2)
                     {
                         Console.BackgroundColor = ConsoleColor.DarkBlue;
                         Console.ForegroundColor = ConsoleColor.Cyan;
                     }
+
                     Console.WriteLine("換IP後按任意鍵繼續");
                 }
+
                 Console.ResetColor();
                 Console.ReadKey();
             }
@@ -249,6 +264,7 @@ namespace MyKirito
                     Console.WriteLine(e);
                 }
             }
+
             return errorOutput;
         }
     }

@@ -28,18 +28,19 @@ namespace MyKirito
             return await content.ReadAsJsonAsync<T>();
         }
 
-        public static T ReadAsJsonAsync<T>(this string content,bool ignoreNullValues=true)
+        public static T ReadAsJsonAsync<T>(this string content, bool ignoreNullValues = true)
         {
             return JsonSerializer.Deserialize<T>(content,
-                new JsonSerializerOptions {PropertyNameCaseInsensitive = true, IgnoreNullValues = ignoreNullValues });
+                new JsonSerializerOptions {PropertyNameCaseInsensitive = true, IgnoreNullValues = ignoreNullValues});
         }
 
-        public static string ToJsonString<T>(this T content,bool ignoreNullValues=true)
+        public static string ToJsonString<T>(this T content, bool ignoreNullValues = true)
         {
             return JsonSerializer.Serialize(content,
                 new JsonSerializerOptions
                 {
-                    WriteIndented = true, IgnoreNullValues = ignoreNullValues, Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+                    WriteIndented = true, IgnoreNullValues = ignoreNullValues,
+                    Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
                 });
         }
 

@@ -43,7 +43,7 @@ namespace MyKirito
         [Description("哥德夫利")] Godfree,
         [Description("努西")] Fish,
         [Description("星爆小拳石")] Geodude,
-        [Description("愛麗絲")] Alice,
+        [Description("愛麗絲")] Alice
     }
 
     // 戰鬥列舉值

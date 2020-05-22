@@ -1,18 +1,18 @@
-﻿using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace MyKirito
 {
     internal class LifetimeEventsHostedService : BackgroundService
     {
+        private readonly IHostApplicationLifetime _appLifetime;
+        private readonly IHostEnvironment _hostEnvironment;
         private readonly ILogger _logger;
         private readonly IYourKiritoService _yourService;
-        private readonly IHostEnvironment _hostEnvironment;
-        private readonly IHostApplicationLifetime _appLifetime;
 
         public LifetimeEventsHostedService(
             ILogger<LifetimeEventsHostedService> logger,
@@ -25,6 +25,7 @@ namespace MyKirito
             _hostEnvironment = hostEnvironment;
             _appLifetime = appLifetime;
         }
+
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("StartAsync");
@@ -37,7 +38,7 @@ namespace MyKirito
 
         private async Task DoWork(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("DoWork");            
+            _logger.LogInformation("DoWork");
             while (!cancellationToken.IsCancellationRequested)
             {
                 // 啟動遊戲服務
@@ -47,23 +48,25 @@ namespace MyKirito
             }
         }
 
-        private async Task WriteJson(CancellationToken cancellationToken,string path, string name)
+        private async Task WriteJson(CancellationToken cancellationToken, string path, string name)
         {
             _logger.LogInformation("WriteJson");
             try
             {
-                using (StreamWriter outputFile = new StreamWriter(Path.Combine(path, name)))
+                using (var outputFile = new StreamWriter(Path.Combine(path, name)))
                 {
                     await outputFile.WriteAsync(Global.GameOptions.ToJsonString(false));
                 }
+
                 Console.WriteLine($"寫入位於 {path} 的設定檔 {name} 完成");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"寫入位於 {path} 的設定檔 {name} 失敗");
                 Console.WriteLine(path);
                 Console.WriteLine(ex.Message);
-            }            
+            }
+
             _logger.LogInformation("WriteJson End");
         }
 

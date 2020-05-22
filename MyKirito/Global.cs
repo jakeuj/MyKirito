@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace MyKirito
 {
@@ -14,17 +13,17 @@ namespace MyKirito
         // 遊戲檢查基本冷卻時間 (預設:100秒)
         public const int CheckTime = 100;
 
-        public static GameOptions GameOptions { get; set; } = new GameOptions();
-        public static MyKirito MyKiritoDto { get; set; } = null;
+        public const string JsonFileName = "gamesttings.json";
+
+        public const string CsvFileName = "lv.csv";
 
         public static DateTime NextPvpTime = DateTime.Now.AddSeconds(PvpTime);
 
         public static DateTime NextActionTime = DateTime.Now;
 
+        public static GameOptions GameOptions { get; set; } = new GameOptions();
+        public static MyKirito MyKiritoDto { get; set; } = null;
+
         public static string JsonPath { get; set; }
-
-        public const string JsonFileName = "gamesttings.json";
-
-        public const string CsvFileName = "lv.csv";
     }
 }

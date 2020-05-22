@@ -1,12 +1,8 @@
 ﻿using System;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace MyKirito
 {
@@ -26,8 +22,10 @@ namespace MyKirito
 
             return 0;
         }
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
+
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddHttpClient<MyKiritoService>();
@@ -35,5 +33,6 @@ namespace MyKirito
                     services.AddSingleton<IYourKiritoService, YourKiritoService>();
                     services.AddSingleton<IInitializationService, InitializationService>();
                 });
+        }
     }
 }
