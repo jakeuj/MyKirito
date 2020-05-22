@@ -31,7 +31,7 @@ namespace MyKirito
         public string[] ColorPVP { get; set; } = {"red", "orange"};
 
         public List<string> CharacterPVP { get; set; } = new List<string> {"莉茲貝特"};
-        public List<string> NotWantCharacterPVP { get; set; } = new List<string> {"希茲克利夫"};
+        public List<string> NotWantCharacterPVP { get; set; } = new List<string> {"希茲克利夫","尤吉歐"};
 
         // 遊戲檢查額外冷卻時間浮動上限 (預設:10秒)
         public int RandTime { get; set; }
