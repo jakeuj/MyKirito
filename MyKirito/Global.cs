@@ -24,5 +24,7 @@ namespace MyKirito
         public static string JsonPath { get; set; }
 
         public const string JsonFileName = "gamesttings.json";
+
+        public const string CsvFileName = "lv.csv";
     }
 }

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
+using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
@@ -72,12 +73,14 @@ namespace MyKirito
             var content = response.Content;
             if (response.IsSuccessStatusCode)
             {
-                var output = await content.ReadAsJsonAsync<ActionOutput>();
+                var output = await content.ReadAsJsonAsync<ActionOutput>();                
                 Console.WriteLine(output.Message);
+                if (output != null && output.Gained != null && output.Gained.Hp != null)
+                    await WriteJson(output.Gained, ActionEnum.None);
                 return output;
             }
 
-            await OnErrorOccur(response.StatusCode, content, "行動", ConsoleColor.Yellow);
+            await OnErrorOccur(response.StatusCode, content, "行動", 1);
             return null;
         }
 
@@ -146,30 +149,73 @@ namespace MyKirito
                 var output = await content.ReadAsJsonAsync<BattleLog>();
                 output.Messages.Select(x => x.M).ToList().ForEach(Console.WriteLine);
                 Console.WriteLine($"與 [{userLv}] {userNickName} 戰鬥 {output.Result} 獲得 {output.Gained.Exp} 經驗");
+                if (output != null && output.Gained != null && output.Gained.Hp != null)
+                    await WriteJson(output.Gained, ActionEnum.None, output.Result == "勝利");
+                
                 return (output, response.StatusCode,null);
             }            
-            return (null, response.StatusCode, await OnErrorOccur(response.StatusCode, content, "戰鬥", ConsoleColor.Cyan));
+            return (null, response.StatusCode, await OnErrorOccur(response.StatusCode, content, "戰鬥", 2));
         }
 
-        private async Task<ErrorOutput> OnErrorOccur(HttpStatusCode statusCode, HttpContent content, string message = "", ConsoleColor color = ConsoleColor.Black)
+        private async Task WriteJson(Gained gained, ActionEnum act, bool win=false)
+        {
+            _logger.LogDebug($"寫入 {Global.JsonPath} {Global.CsvFileName} 開始");
+            Console.WriteLine("已升級，準備寫入升級資訊：");
+            Console.WriteLine(gained.ToJsonString());
+            try
+            {
+                using (StreamWriter outputFile = new StreamWriter(Path.Combine(Global.JsonPath, Global.CsvFileName), true))
+                {
+                    await outputFile.WriteLineAsync($"{act},{win},{gained.Hp},{gained.Atk},{gained.Def},{gained.Stm},{gained.Agi},{gained.Spd},{gained.Tec},{gained.Int},{gained.Lck},{gained.PrevLv},{gained.NextLv},{gained.Exp},{gained.PrevTitle}");
+                }
+                Console.WriteLine("升級紀錄完成");              
+                _logger.LogInformation($"寫入 {Global.JsonPath} {Global.CsvFileName} 成功");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("升級紀錄失敗");
+                _logger.LogError($"寫入 {Global.JsonPath} {Global.CsvFileName} 失敗");
+                Console.WriteLine(ex.Message);
+            }
+            _logger.LogDebug($"寫入 {Global.JsonPath} {Global.CsvFileName} 完成");
+        }
+
+        private async Task<ErrorOutput> OnErrorOccur(HttpStatusCode statusCode, HttpContent content, string message = "", int from = 0)
         {
             ErrorOutput errorOutput = null;
             if (statusCode == HttpStatusCode.Forbidden)
             {
-                Console.BackgroundColor = ConsoleColor.DarkBlue;
                 // 需驗證
                 try
                 {
                     errorOutput = await content.ReadAsJsonAsync<ErrorOutput>();
                     Console.WriteLine(errorOutput.Error);
-                    Console.ForegroundColor = color;
+                    if (from == 1)
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkMagenta;
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                    }
+                    else if (from == 2)
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkBlue;
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                    }
                     Console.WriteLine($"[{Global.MyKiritoDto.Nickname}] 驗證 [{message}] 後 [{Global.GameOptions.DefaultAct.GetDescriptionText()}] 按任意鍵繼續");                    
                 }
                 catch
                 {
                     var output = await content.ReadAsStringAsync();
                     Console.WriteLine(output);
-                    Console.ForegroundColor = color;
+                    if (from == 1)
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkMagenta;
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                    }
+                    else if(from == 2)
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkBlue;
+                        Console.ForegroundColor = ConsoleColor.Cyan;
+                    }
                     Console.WriteLine("換IP後按任意鍵繼續");
                 }
                 Console.ResetColor();
