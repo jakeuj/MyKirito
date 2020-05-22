@@ -78,7 +78,7 @@ namespace MyKirito
                 var output = await content.ReadAsJsonAsync<ActionOutput>();
                 Console.WriteLine(output.Message);
                 if (output != null && output.Gained != null && output.Gained.Hp != null)
-                    await WriteJson(output.Gained, ActionEnum.None);
+                    await WriteJson(output.Gained, input);
                 return output;
             }
 
