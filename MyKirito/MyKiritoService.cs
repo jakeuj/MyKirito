@@ -166,17 +166,25 @@ namespace MyKirito
 
         private async Task WriteJson(Gained gained, ActionEnum act, bool win = false)
         {
-            _logger.LogDebug($"寫入 {Global.JsonPath} {Global.CsvFileName} 開始");
+            var path = Path.Combine(Global.JsonPath, Global.CsvFileName);
+            _logger.LogDebug($"寫入 {path} 開始");
             Console.WriteLine("已升級，準備寫入升級資訊：");
             Console.WriteLine(gained.ToJsonString());
             try
             {
-                using (var outputFile = new StreamWriter(Path.Combine(Global.JsonPath, Global.CsvFileName), true))
-                {
-                    await outputFile.WriteLineAsync(
-                        $"{act},{win},{gained.Hp},{gained.Atk},{gained.Def},{gained.Stm},{gained.Agi},{gained.Spd},{gained.Tec},{gained.Int},{gained.Lck},{gained.PrevLv},{gained.NextLv},{gained.Exp},{gained.PrevTitle}");
-                }
-
+                if(File.Exists(path)) using (var outputFile = new StreamWriter(path, true))
+                    {
+                        _logger.LogDebug("檔案已存在，直接附加資料");
+                        await outputFile.WriteLineAsync(
+                            $"{act},{win},{gained.Hp},{gained.Atk},{gained.Def},{gained.Stm},{gained.Agi},{gained.Spd},{gained.Tec},{gained.Int},{gained.Lck},{gained.PrevLv},{gained.NextLv},{gained.Exp},{gained.PrevTitle}");
+                    }
+                else using (var outputFile = new StreamWriter(path, true))
+                    {
+                        _logger.LogDebug("檔案不存在，寫入欄位資訊");
+                        await outputFile.WriteLineAsync("Action,Win,HP,Atk,Def,Stm,Agi,Spd,Tec,Int,Lck,PrevLv,NextLv,Exp,PrevTitle");
+                        await outputFile.WriteLineAsync(
+                            $"{act},{win},{gained.Hp},{gained.Atk},{gained.Def},{gained.Stm},{gained.Agi},{gained.Spd},{gained.Tec},{gained.Int},{gained.Lck},{gained.PrevLv},{gained.NextLv},{gained.Exp},{gained.PrevTitle}");
+                    }
                 Console.WriteLine("升級紀錄完成");
                 _logger.LogInformation($"寫入 {Global.JsonPath} {Global.CsvFileName} 成功");
             }
