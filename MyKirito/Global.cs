@@ -11,7 +11,10 @@ namespace MyKirito
         public const int PvpTime = 400;
 
         // 遊戲檢查基本冷卻時間 (預設:100秒)
-        public const int CheckTime = 100;
+        public static int CheckTime = 100;
+
+        // 遊戲檢查基本冷卻時間 (預設:1小時)
+        public const int FloorTime = 1;
 
         public const string JsonFileName = "gamesttings.json";
 
@@ -20,6 +23,8 @@ namespace MyKirito
         public static DateTime NextPvpTime = DateTime.Now.AddSeconds(PvpTime);
 
         public static DateTime NextActionTime = DateTime.Now;
+
+        public static DateTime NextFloorTime = DateTime.Now;
 
         public static GameOptions GameOptions { get; set; } = new GameOptions();
         public static MyKirito MyKiritoDto { get; set; } = null;

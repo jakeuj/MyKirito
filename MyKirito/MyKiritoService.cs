@@ -68,7 +68,29 @@ namespace MyKirito
 
         public async Task<ActionOutput> DoAction(ActionEnum input)
         {
-            var json = new ActionInput {Action = input.ToString().ToLower() + Global.DoActionVersion};
+            string act=string.Empty;
+            switch(input)
+            {
+                case ActionEnum.H1:
+                    act = "1h";
+                    break;
+                case ActionEnum.H2:
+                    act = "2h";
+                    break;
+                case ActionEnum.H4:
+                    act = "4h";
+                    break;
+                case ActionEnum.H8:
+                    act = "8h";
+                    break;
+                case ActionEnum.FloorBonus:
+                    act = "floorBonus";
+                    break;
+                default:
+                    act = input.ToString().ToLower() + Global.DoActionVersion;
+                    break;
+            }
+            var json = new ActionInput {Action = act};
             HttpContent contentPost = new StringContent(json.ToJsonString(), Encoding.UTF8, "application/json");
             var response = await Client.PostAsync("my-kirito/doaction", contentPost);
             Console.WriteLine("{0} {1} {2}", "開始行動", input.GetDescriptionText(), response.StatusCode);

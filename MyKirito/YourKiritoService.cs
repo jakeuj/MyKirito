@@ -41,10 +41,9 @@ namespace MyKirito
             }
 
             var addTime = Global.CheckTime;
-            if (Global.GameOptions.DefaultAct == ActionEnum.None) addTime = Global.PvpTime;
+            if (Global.GameOptions.DefaultAct == ActionEnum.None || Global.GameOptions.DefaultAct == ActionEnum.H1 || Global.GameOptions.DefaultAct == ActionEnum.H2 || Global.GameOptions.DefaultAct == ActionEnum.H4 || Global.GameOptions.DefaultAct == ActionEnum.H8 || Global.GameOptions.DefaultAct == ActionEnum.FloorBonus) addTime = Global.PvpTime;
             if (Global.GameOptions.RandTime > 0)
                 addTime += RandomCd.Next(1, Global.GameOptions.RandTime);
-            Global.NextActionTime = DateTime.Now.AddSeconds(addTime);
             var output = string.Empty;
             if (Global.MyKiritoDto != null)
                 output += $"[{Global.MyKiritoDto.Nickname}][{Global.MyKiritoDto.Lv}], ";
@@ -59,10 +58,38 @@ namespace MyKirito
         public async Task CommonLoop()
         {
             // 日常動作：汁妹之類的
-            await DoAction(Global.GameOptions.DefaultAct);
+            if(DateTime.Now > Global.NextActionTime && await DoAction(Global.GameOptions.DefaultAct))
+            {
+                int act;
+                switch (Global.GameOptions.DefaultAct)
+                {
+                    case ActionEnum.H1:
+                        act = 1 * 60 * 60;
+                        break;
+                    case ActionEnum.H2:
+                        act = 2 * 60 * 60;
+                        break;
+                    case ActionEnum.H4:
+                        act = 4 * 60 * 60;
+                        break;
+                    case ActionEnum.H8:
+                        act = 8 * 60 * 60;
+                        break;
+                    case ActionEnum.FloorBonus:
+                        act = Global.FloorTime * 60 * 60;
+                        break;
+                    default:
+                        act = Global.CheckTime;
+                        break;
+                }
+                Global.NextActionTime = DateTime.Now.AddSeconds(act);
+            }
+                    
+            //樓層獎勵
+            if (Global.GameOptions.FloorBonusEnable && Global.GameOptions.DefaultAct!= ActionEnum.FloorBonus && DateTime.Now > Global.NextFloorTime && await DoAction(ActionEnum.FloorBonus))
+                Global.NextFloorTime = DateTime.Now.AddHours(Global.FloorTime);                
             // PVP 
-            if (Global.GameOptions.DefaultFight != FightEnum.None && DateTime.Now > Global.NextPvpTime)
-                if (await GetUserListThenChallenge())
+                if (Global.GameOptions.DefaultFight != FightEnum.None && DateTime.Now > Global.NextPvpTime && await GetUserListThenChallenge())
                     Global.NextPvpTime = DateTime.Now.AddSeconds(Global.PvpTime);
         }
 

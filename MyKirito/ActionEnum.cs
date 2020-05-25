@@ -12,7 +12,12 @@ namespace MyKirito
         [Description("外出野餐")] Eat,
         [Description("汁妹")] Girl,
         [Description("狩獵兔肉")] Hunt,
-        [Description("釣魚")] Fish
+        [Description("釣魚")] Fish,
+        [Description("修行一小時")] H1,
+        [Description("修行兩小時")] H2,
+        [Description("修行四小時")] H4,
+        [Description("修行八小時")] H8,        
+        [Description("層數獎勵")] FloorBonus,        
     }
 
     public enum CharEnum

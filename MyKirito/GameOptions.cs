@@ -58,5 +58,7 @@ namespace MyKirito
 
         //目前在打的等級
         public long CurrentSearchLv { get; set; } = 999;
+
+        public bool FloorBonusEnable { get; set; } = true;
     }
 }
