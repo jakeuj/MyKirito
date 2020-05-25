@@ -38,7 +38,9 @@ jobs:
           - Use
           see ReadMe.txt
           - OnLine Version
-          [YourKirito](https://yourkirito.azurewebsites.net/)          
+          [YourKirito](https://yourkirito.azurewebsites.net/)
+          - Tampermonkey Version
+          [GreasyFork](https://greasyfork.org/zh-TW/scripts/404092-mykirito-auto-click)
         draft: false
         prerelease: false
     - name: Upload Release Asset
